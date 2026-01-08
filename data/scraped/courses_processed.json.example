@@ -1,0 +1,36 @@
+[
+  {
+    "code": "COMP 1001",
+    "title": "Introduction to Computer Science",
+    "credits": 3,
+    "description": "An introduction to the fundamental concepts of computer science.",
+    "level": 1000,
+    "department": "COMP",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": []
+  },
+  {
+    "code": "COMP 1002",
+    "title": "Programming Fundamentals",
+    "credits": 3,
+    "description": "Introduction to programming concepts and problem-solving.",
+    "level": 1000,
+    "department": "COMP",
+    "prerequisites": ["COMP 1001"],
+    "corequisites": [],
+    "exclusions": []
+  },
+  {
+    "code": "COMP 2001",
+    "title": "Data Structures and Algorithms",
+    "credits": 3,
+    "description": "Study of fundamental data structures and algorithms.",
+    "level": 2000,
+    "department": "COMP",
+    "prerequisites": ["COMP 1002"],
+    "corequisites": [],
+    "exclusions": []
+  }
+]
+
