@@ -23,14 +23,6 @@ export async function fetchCourses() {
     throw error;
   }
 
-  // Debug: Log first course to check data
-  if (data && data.length > 0) {
-    const comp1805 = data.find((c: DatabaseCourse) => c.code === 'COMP 1805');
-    if (comp1805) {
-      console.log('COMP 1805 from Supabase:', comp1805.title);
-    }
-  }
-
   return data as DatabaseCourse[];
 }
 

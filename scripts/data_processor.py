@@ -65,16 +65,13 @@ def process_course(raw_course: Dict) -> Optional[Dict]:
         title = raw_course.get('title', '').strip()
         description = raw_course.get('description', '').strip()
         
-        # Extract credits - database expects integer, so round up
-        # Most courses are 0.5 credits, which we'll store as 1
+        # Extract credits - store as float to support 0.5 credits
         credits_text = raw_course.get('credits', 0.5)
         if isinstance(credits_text, str):
             match = re.search(r'(\d+\.?\d*)', credits_text)
-            credits_float = float(match.group(1)) if match else 0.5
+            credits = float(match.group(1)) if match else 0.5
         else:
-            credits_float = float(credits_text)
-        # Round up: 0.5 -> 1, 1.0 -> 1
-        credits = max(1, int(credits_float + 0.5))
+            credits = float(credits_text)
         
         # Extract prerequisites
         prereq_text = raw_course.get('prerequisites', '') or description

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS courses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(20) UNIQUE NOT NULL,  -- e.g., "COMP 1001"
   title TEXT NOT NULL,
-  credits INTEGER NOT NULL,
+  credits NUMERIC(3,1) NOT NULL,  -- Supports 0.5, 1.0, 1.5, etc.
   description TEXT,
   level INTEGER NOT NULL,            -- 1000, 2000, 3000, 4000
   department VARCHAR(10) NOT NULL,   -- "COMP" for now

@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Course } from '@/lib/types';
-import { getCourseLevelColor } from '@/lib/courseData';
+import { getCourseLevelColor, formatCredits } from '@/lib/courseData';
 
 interface CourseNodeData {
   course: Course;
@@ -72,7 +72,7 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
           isUnlockable ? 'bg-emerald-100 text-emerald-700' :
           'bg-gray-100 text-gray-600'
         }`}>
-          {course.credits} credit{course.credits !== 1 ? 's' : ''} • {course.level}-level
+          {formatCredits(course.credits)} • {course.level}-level
         </div>
       </div>
 

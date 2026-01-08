@@ -2,6 +2,7 @@
 
 import { Course } from '@/lib/types';
 import { findDependentCourses } from '@/lib/graph';
+import { formatCredits } from '@/lib/courseData';
 
 interface CourseDetailsProps {
   course: Course | null;
@@ -53,7 +54,7 @@ export default function CourseDetails({
           <div className="space-y-1">
             <h2 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{course.code}</h2>
             <p className="text-sm font-semibold text-gray-600 px-2 py-1 bg-white/80 rounded-lg inline-block">
-              {course.credits} credit{course.credits !== 1 ? 's' : ''} • {course.level}-level
+              {formatCredits(course.credits)} • {course.level}-level
             </p>
           </div>
           <button

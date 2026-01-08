@@ -158,4 +158,19 @@ export function getCourseLevelColor(level: number): string {
   return '#16a34a'; // green-600
 }
 
+// Format credits display text (handles 0, 0.25, 0.5, 1, 1.5, etc.)
+export function formatCredits(credits: number): string {
+  // In English grammar:
+  // - 0 credit (singular, though rarely used)
+  // - 0.25 credit (singular - fractions < 1 are singular)
+  // - 0.5 credit (singular)
+  // - 1 credit (singular)
+  // - 1.5 credits (plural - > 1 is plural)
+  // - 2 credits (plural)
+  const isPlural = credits > 1;
+  // Format to remove trailing zeros (0.5 instead of 0.50, 1 instead of 1.0)
+  const formattedCredits = credits % 1 === 0 ? credits.toString() : credits.toFixed(2).replace(/\.?0+$/, '');
+  return `${formattedCredits} credit${isPlural ? 's' : ''}`;
+}
+
 

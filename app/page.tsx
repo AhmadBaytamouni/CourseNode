@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Course } from '@/lib/types';
-import { getAllCourses, getCourseByCode } from '@/lib/courseData';
+import { getAllCourses, getCourseByCode, formatCredits } from '@/lib/courseData';
 import { useCourseSelection } from '@/hooks/useCourseSelection';
 import { useCourseGraph } from '@/hooks/useCourseGraph';
 import CourseGraph from '@/components/CourseGraph';
@@ -172,7 +172,7 @@ export default function Home() {
               <div className="space-y-1.5">
                 <h2 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{selectedCourse.code}</h2>
                 <p className="text-sm font-semibold text-gray-600 px-2 py-1 bg-white/80 rounded-lg inline-block">
-                  {selectedCourse.credits} credit{selectedCourse.credits !== 1 ? 's' : ''} • {selectedCourse.level}-level
+                  {formatCredits(selectedCourse.credits)} • {selectedCourse.level}-level
                 </p>
               </div>
               <button
