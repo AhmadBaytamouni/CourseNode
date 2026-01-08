@@ -8,7 +8,16 @@ export function useCourseSelection(courses: Course[]) {
   const [unlockableIds, setUnlockableIds] = useState<Set<string>>(new Set());
 
   // Select a course and highlight it along with its prerequisites and unlockable courses
+  // If the course is already selected, it will be deselected (toggle behavior)
   const selectCourseWithPrerequisites = useCallback((courseId: string) => {
+    // Toggle: if already selected, clear selection
+    if (selectedCourseId === courseId) {
+      setSelectedCourseId(null);
+      setPrerequisiteIds(new Set());
+      setUnlockableIds(new Set());
+      return;
+    }
+
     const course = courses.find(c => c.id === courseId);
     if (!course) return;
 
@@ -29,7 +38,7 @@ export function useCourseSelection(courses: Course[]) {
     const selectedSet = new Set([courseId]);
     const unlockable = findDependentCourses(courses, courseId).map(c => c.id);
     setUnlockableIds(new Set(unlockable));
-  }, [courses]);
+  }, [courses, selectedCourseId]);
 
   const clearSelection = useCallback(() => {
     setSelectedCourseId(null);

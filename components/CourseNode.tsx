@@ -36,7 +36,7 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
 
   return (
     <div
-      className={`rounded-2xl ${nodeClasses} p-5 min-w-[220px] transition-all duration-300 cursor-pointer ${
+      className={`rounded-2xl ${nodeClasses} p-5 w-[240px] h-[160px] transition-all duration-300 cursor-pointer flex flex-col ${
         isSelected ? 'scale-110 z-20 ring-4 ring-blue-200/50 animate-pulse-slow' : 
         isPrerequisite ? 'scale-105 z-10 ring-2 ring-indigo-200/30' : 
         isUnlockable ? 'scale-105 z-10 ring-2 ring-emerald-200/30' :
@@ -49,7 +49,7 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
     >
       <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-gray-400" />
       
-      <div className="text-center space-y-2.5">
+      <div className="text-center space-y-2.5 flex-1 flex flex-col justify-between">
         <div className={`font-extrabold text-lg tracking-tight ${
           isSelected ? 'text-blue-900' : 
           isPrerequisite ? 'text-indigo-900' : 
@@ -58,7 +58,7 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
         }`}>
           {course.code}
         </div>
-        <div className={`text-xs leading-relaxed line-clamp-2 font-medium ${
+        <div className={`text-xs leading-relaxed line-clamp-2 font-medium min-h-[2.5rem] flex items-center justify-center ${
           isSelected ? 'text-blue-800' : 
           isPrerequisite ? 'text-indigo-800' : 
           isUnlockable ? 'text-emerald-800' :

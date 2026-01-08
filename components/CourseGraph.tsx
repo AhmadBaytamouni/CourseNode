@@ -44,6 +44,9 @@ export default function CourseGraph({
         onNodesChange={onNodesChange}
         fitView
         proOptions={{ hideAttribution: true }}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        selectNodesOnDrag={false}
       >
         <Background 
           variant="dots" 

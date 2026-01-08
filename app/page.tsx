@@ -83,16 +83,36 @@ export default function Home() {
 
   const handleNodeClick = (nodeId: string) => {
     const course = courses.find((c) => c.id === nodeId);
-    if (course) {
-      selectCourseWithPrerequisites(nodeId);
+    if (!course) return;
+
+    // Check if we're toggling off (course is currently selected)
+    const wasSelected = selectedCourseId === nodeId;
+    
+    // Toggle selection (this will select or deselect based on current state)
+    selectCourseWithPrerequisites(nodeId);
+    
+    // Update selectedCourse state based on whether we selected or deselected
+    if (wasSelected) {
+      setSelectedCourse(null);
+    } else {
       setSelectedCourse(course);
     }
   };
 
   const handleCourseClick = (courseCode: string) => {
     const course = getCourseByCode(courses, courseCode);
-    if (course) {
-      selectCourseWithPrerequisites(course.id);
+    if (!course) return;
+
+    // Check if we're toggling off (course is currently selected)
+    const wasSelected = selectedCourseId === course.id;
+    
+    // Toggle selection (this will select or deselect based on current state)
+    selectCourseWithPrerequisites(course.id);
+    
+    // Update selectedCourse state based on whether we selected or deselected
+    if (wasSelected) {
+      setSelectedCourse(null);
+    } else {
       setSelectedCourse(course);
     }
   };

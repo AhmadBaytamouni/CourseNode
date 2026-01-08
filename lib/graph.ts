@@ -61,6 +61,7 @@ export function buildCourseNodes(
         isUnlockable: unlockableIds.has(course.id),
         isFaded: shouldFade(course.id),
       },
+      draggable: false,
     };
   });
 }
