@@ -50,11 +50,9 @@ export default function CourseGraph({
       >
         <Background 
           variant="dots" 
-          gap={24} 
-          size={1.5}
-          className="!bg-gradient-to-br from-indigo-50/60 via-purple-50/40 via-pink-50/30 via-cyan-50/30 to-emerald-50/40"
-          color="#c7d2fe"
-          style={{ background: 'linear-gradient(135deg, rgba(238, 242, 255, 0.6) 0%, rgba(243, 232, 255, 0.4) 25%, rgba(251, 207, 232, 0.3) 50%, rgba(207, 250, 254, 0.3) 75%, rgba(209, 250, 229, 0.4) 100%)' }}
+          gap={40} 
+          size={1}
+          color="rgba(59, 130, 246, 0.15)"
         />
       </ReactFlow>
     </div>

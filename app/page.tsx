@@ -119,15 +119,15 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-4">
           <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 mx-auto"></div>
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500/20 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div>
-            <p className="text-gray-700 font-semibold text-lg">Loading courses...</p>
-            <p className="text-sm text-gray-500 mt-1">Please wait</p>
+            <p className="text-gray-200 font-semibold text-lg">Loading courses...</p>
+            <p className="text-sm text-gray-400 mt-1">Please wait</p>
           </div>
         </div>
       </div>
@@ -136,17 +136,17 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="flex items-center justify-center h-screen">
         <div className="text-center space-y-4 max-w-md mx-4">
-          <div className="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center">
-            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 mx-auto bg-red-500/20 rounded-full flex items-center justify-center border border-red-500/30">
+            <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p className="text-red-600 font-bold text-xl mb-2">Error Loading Courses</p>
-            <p className="text-gray-700 mb-4">{error}</p>
-            <p className="text-sm text-gray-600 bg-white/80 rounded-lg p-4 border-2 border-red-200">
+            <p className="text-red-400 font-bold text-xl mb-2">Error Loading Courses</p>
+            <p className="text-gray-300 mb-4">{error}</p>
+            <p className="text-sm text-gray-400 glass rounded-lg p-4 border border-red-500/30">
               Please check your Supabase configuration and ensure the database is set up correctly.
             </p>
           </div>
@@ -186,18 +186,18 @@ export default function Home() {
 
       {/* Mobile course details modal */}
       {selectedCourse && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end animate-fade-in">
-          <div className="bg-gradient-to-b from-white via-indigo-50/30 to-purple-50/30 w-full max-h-[85vh] rounded-t-3xl shadow-2xl overflow-hidden border-t-2 border-indigo-200">
-            <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 backdrop-blur-md border-b-2 border-indigo-200 px-6 py-5 flex justify-between items-start shadow-md">
-              <div className="space-y-1.5">
-                <h2 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{selectedCourse.code}</h2>
-                <p className="text-sm font-semibold text-gray-600 px-2 py-1 bg-white/80 rounded-lg inline-block">
+        <div className="lg:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end animate-fade-in">
+          <div className="glass-strong w-full max-h-[85vh] rounded-t-3xl shadow-2xl overflow-hidden border-t border-white/20">
+            <div className="sticky top-0 glass-strong border-b border-white/10 px-6 py-5 flex justify-between items-start shadow-md">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{selectedCourse.code}</h2>
+                <p className="text-sm font-semibold text-gray-300 px-3 py-1.5 glass rounded-lg inline-block border border-white/10">
                   {formatCredits(selectedCourse.credits)} • {selectedCourse.level}-level
                 </p>
               </div>
               <button
                 onClick={() => setSelectedCourse(null)}
-                className="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-white/80 rounded-lg transition-all duration-200 hover:scale-110 shadow-sm hover:shadow-md"
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-110 border border-white/10 hover:border-white/20"
                 aria-label="Close details"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,22 +206,22 @@ export default function Home() {
               </button>
             </div>
             <div className="p-6 overflow-y-auto space-y-6" style={{ maxHeight: 'calc(85vh - 100px)' }}>
-              <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-indigo-100 shadow-sm">
-                <h3 className="text-lg font-bold text-gray-900">{selectedCourse.title}</h3>
+              <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
+                <h3 className="text-lg font-bold text-gray-100">{selectedCourse.title}</h3>
               </div>
               {selectedCourse.description && (
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-indigo-100 shadow-sm">
-                  <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span className="w-1 h-4 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span>
+                <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
+                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
                     Description
                   </h4>
-                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{selectedCourse.description}</p>
+                  <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{selectedCourse.description}</p>
                 </div>
               )}
               {selectedCourse.prerequisites.length > 0 && (
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-indigo-100 shadow-sm">
-                  <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span className="w-1 h-4 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span>
+                <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
+                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
                     Prerequisites ({selectedCourse.prerequisites.length})
                   </h4>
                   <div className="space-y-2.5">
@@ -232,19 +232,19 @@ export default function Home() {
                         <button
                           key={idx}
                           onClick={() => handleCourseClick(prereqCourse.code)}
-                          className="w-full text-left px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 border-2 border-indigo-200 hover:border-indigo-300 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]"
+                          className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-indigo-500/30 hover:border-indigo-400/50 rounded-xl transition-all duration-200 shadow-lg hover:shadow-indigo-500/20 transform hover:scale-[1.02]"
                         >
-                          <div className="font-bold text-sm text-indigo-900">{prereqCourse.code}</div>
-                          <div className="text-xs text-indigo-700 mt-1 line-clamp-1 font-medium">{prereqCourse.title}</div>
+                          <div className="font-bold text-sm text-blue-300">{prereqCourse.code}</div>
+                          <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium">{prereqCourse.title}</div>
                           {(prereq.is_corequisite || prereq.is_exclusion) && (
                             <div className="flex gap-2 mt-2">
                               {prereq.is_corequisite && (
-                                <span className="inline-block text-xs px-2.5 py-1 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 rounded-lg font-semibold border border-orange-200">
+                                <span className="inline-block text-xs px-2.5 py-1 bg-orange-500/20 text-orange-300 rounded-lg font-semibold border border-orange-500/30">
                                   Corequisite
                                 </span>
                               )}
                               {prereq.is_exclusion && (
-                                <span className="inline-block text-xs px-2.5 py-1 bg-gradient-to-r from-red-100 to-rose-100 text-red-700 rounded-lg font-semibold border border-red-200">
+                                <span className="inline-block text-xs px-2.5 py-1 bg-red-500/20 text-red-300 rounded-lg font-semibold border border-red-500/30">
                                   Exclusion
                                 </span>
                               )}

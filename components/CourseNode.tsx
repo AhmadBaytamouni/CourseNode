@@ -18,65 +18,65 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
   const levelColor = getCourseLevelColor(course.level);
 
   // Determine styling based on selection state
-  let nodeClasses = 'bg-white border-2';
+  let nodeClasses = 'glass border-2';
   let borderColor = levelColor;
   
   if (isSelected) {
-    nodeClasses = 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-500 shadow-2xl shadow-blue-500/30';
+    nodeClasses = 'glass-strong border-blue-500 shadow-2xl shadow-blue-500/50 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20';
     borderColor = '#3b82f6';
   } else if (isPrerequisite) {
-    nodeClasses = 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-400 shadow-lg shadow-indigo-500/20';
+    nodeClasses = 'glass border-indigo-500/60 shadow-xl shadow-indigo-500/30 bg-gradient-to-br from-indigo-500/15 to-purple-500/15';
     borderColor = '#818cf8';
   } else if (isUnlockable) {
-    nodeClasses = 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-400 shadow-lg shadow-emerald-500/20';
+    nodeClasses = 'glass border-emerald-500/60 shadow-xl shadow-emerald-500/30 bg-gradient-to-br from-emerald-500/15 to-teal-500/15';
     borderColor = '#10b981';
   } else {
-    nodeClasses = 'bg-white/95 backdrop-blur-sm border-2 hover:border-opacity-80 hover:shadow-lg transition-all duration-300';
+    nodeClasses = 'glass border-white/20 hover:border-white/30 hover:shadow-xl transition-all duration-300';
   }
 
   return (
     <div
-      className={`rounded-2xl ${nodeClasses} p-5 w-[240px] h-[160px] transition-all duration-300 cursor-pointer flex flex-col ${
-        isSelected ? 'scale-110 z-20 ring-4 ring-blue-200/50 animate-pulse-slow' : 
-        isPrerequisite ? 'scale-105 z-10 ring-2 ring-indigo-200/30' : 
-        isUnlockable ? 'scale-105 z-10 ring-2 ring-emerald-200/30' :
-        'hover:scale-105 hover:ring-2 hover:ring-gray-200'
-      } ${isFaded ? 'opacity-30 grayscale blur-sm' : ''}`}
+      className={`rounded-xl ${nodeClasses} p-5 w-[240px] h-[160px] transition-all duration-300 cursor-pointer flex flex-col ${
+        isSelected ? 'scale-110 z-20 ring-4 ring-blue-500/30 animate-pulse-slow' : 
+        isPrerequisite ? 'scale-105 z-10 ring-2 ring-indigo-500/20' : 
+        isUnlockable ? 'scale-105 z-10 ring-2 ring-emerald-500/20' :
+        'hover:scale-105 hover:ring-2 hover:ring-white/20'
+      } ${isFaded ? 'opacity-20 grayscale blur-[2px]' : ''}`}
       style={{
         borderColor: borderColor,
-        borderWidth: isSelected ? '3px' : '2px',
+        borderWidth: isSelected ? '2px' : '1px',
       }}
     >
-      <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-gray-400" />
+      <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-blue-400/60 !border-2 !border-blue-600" />
       
       <div className="text-center space-y-2.5 flex-1 flex flex-col justify-between">
-        <div className={`font-extrabold text-lg tracking-tight ${
-          isSelected ? 'text-blue-900' : 
-          isPrerequisite ? 'text-indigo-900' : 
-          isUnlockable ? 'text-emerald-900' :
-          'text-gray-900'
+        <div className={`font-bold text-lg tracking-tight ${
+          isSelected ? 'text-blue-300' : 
+          isPrerequisite ? 'text-indigo-300' : 
+          isUnlockable ? 'text-emerald-300' :
+          'text-gray-100'
         }`}>
           {course.code}
         </div>
         <div className={`text-xs leading-relaxed line-clamp-2 font-medium min-h-[2.5rem] flex items-center justify-center ${
-          isSelected ? 'text-blue-800' : 
-          isPrerequisite ? 'text-indigo-800' : 
-          isUnlockable ? 'text-emerald-800' :
-          'text-gray-700'
+          isSelected ? 'text-blue-200' : 
+          isPrerequisite ? 'text-indigo-200' : 
+          isUnlockable ? 'text-emerald-200' :
+          'text-gray-400'
         }`} title={course.title}>
           {course.title}
         </div>
-        <div className={`text-xs font-semibold px-2 py-1 rounded-lg inline-block ${
-          isSelected ? 'bg-blue-100 text-blue-700' : 
-          isPrerequisite ? 'bg-indigo-100 text-indigo-700' : 
-          isUnlockable ? 'bg-emerald-100 text-emerald-700' :
-          'bg-gray-100 text-gray-600'
+        <div className={`text-xs font-semibold px-3 py-1.5 rounded-lg inline-block backdrop-blur-sm ${
+          isSelected ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30' : 
+          isPrerequisite ? 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/30' : 
+          isUnlockable ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30' :
+          'bg-white/10 text-gray-300 border border-white/20'
         }`}>
           {formatCredits(course.credits)} • {course.level}-level
         </div>
       </div>
 
-      <Handle type="source" position={Position.Bottom} className="!w-2 !h-2 !bg-gray-400" />
+      <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-blue-400/60 !border-2 !border-blue-600" />
     </div>
   );
 }
