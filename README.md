@@ -94,7 +94,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ### 4. Scrape and Populate Data
 
 ```bash
-# Scrape course data from Carleton website
+# Scrape course data from Carleton website 
 cd scripts
 python scraper.py
 

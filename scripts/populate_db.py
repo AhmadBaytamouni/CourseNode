@@ -135,14 +135,20 @@ def insert_courses(supabase: SupabaseClient, courses: List[Dict]) -> Dict[str, s
             if existing:
                 # Update existing course
                 course_id = existing[0]['id']
-                supabase.update('courses', {
+                update_data = {
                     'title': course['title'],
                     'credits': course['credits'],
                     'description': course.get('description', ''),
                     'level': course['level'],
                     'department': course['department'],
-                }, filters={'id': course_id})
+                }
+                result = supabase.update('courses', update_data, filters={'id': course_id})
                 code_to_id[course['code']] = course_id
+                # Debug: Print what we're updating
+                if course['code'] == 'COMP 1805':
+                    print(f"Debug COMP 1805 update:")
+                    print(f"  Title being sent: '{course['title']}'")
+                    print(f"  Update result: {result}")
                 print(f"Updated: {course['code']}")
             else:
                 # Insert new course

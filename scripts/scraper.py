@@ -121,115 +121,97 @@ def scrape_course_details(url: str) -> Dict:
 def scrape_all_comp_courses() -> List[Dict]:
     """Scrape all COMP courses from Carleton calendar."""
     courses = []
-    seen_codes = set()
     
     try:
         # Get the main course listing page
         response = requests.get(BASE_URL, timeout=30)
         response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
+        # Use utf-8 encoding explicitly
+        response.encoding = 'utf-8'
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Look for course entries - they're typically in specific HTML structures
-        # Common patterns: headings (h3, h4), paragraphs, or list items with course codes
+        # Get all text content from the page
+        all_text = soup.get_text()
         
-        # Method 1: Look for headings with course codes (e.g., <h3>COMP 1001</h3>)
-        headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-        for heading in headings:
-            text = heading.get_text(strip=True)
-            course_code = extract_course_code(text)
-            if course_code and course_code not in seen_codes:
-                seen_codes.add(course_code)
-                # Get the next sibling or parent content for title/description
-                title = text
-                description = ""
-                credits = 3
-                
-                # Try to extract title (everything after course code)
-                title_match = re.search(r'COMP\s*\d{4}\s*[–\-]\s*(.+)', text)
-                if title_match:
-                    title = title_match.group(1).strip()
-                
-                # Look for content in following siblings
-                next_elem = heading.find_next_sibling()
-                if next_elem:
-                    next_text = next_elem.get_text(strip=True)
-                    if next_text and len(next_text) > 20:
-                        description = next_text[:500]  # Limit description length
-                    
-                    # Extract credits
-                    credits_match = re.search(r'(\d+\.?\d*)\s*credit', next_text, re.IGNORECASE)
-                    if credits_match:
-                        credits = int(float(credits_match.group(1)))
-                
-                courses.append({
-                    'code': course_code,
-                    'title': title,
-                    'description': description,
-                    'credits': credits,
-                    'url': BASE_URL,
-                    'prerequisites': description  # Will be parsed later
-                })
+        # Clean up non-breaking spaces and other special unicode characters
+        # Replace non-breaking space (U+00A0) with regular space
+        all_text = all_text.replace('\u00a0', ' ')
+        # Replace other common problematic characters
+        all_text = all_text.replace('\xa0', ' ')
+        all_text = all_text.replace('\u2011', '-')  # non-breaking hyphen
+        all_text = all_text.replace('\u2013', '-')  # en dash
+        all_text = all_text.replace('\u2014', '-')  # em dash
         
-        # Method 2: Look for paragraphs or divs containing course codes
-        if len(courses) < 10:  # If we didn't find many, try another method
-            paragraphs = soup.find_all(['p', 'div', 'li'])
-            for para in paragraphs:
-                text = para.get_text()
-                # Look for pattern like "COMP 1001 - Course Title"
-                matches = re.finditer(r'COMP\s*(\d{4})\s*[–\-]\s*([^\n]+)', text, re.IGNORECASE)
-                for match in matches:
-                    course_code = f"COMP {match.group(1)}"
-                    if course_code not in seen_codes:
-                        seen_codes.add(course_code)
-                        title = match.group(2).strip()
-                        
-                        # Extract credits from surrounding text
-                        credits_match = re.search(r'(\d+\.?\d*)\s*credit', text, re.IGNORECASE)
-                        credits = int(float(credits_match.group(1))) if credits_match else 3
-                        
-                        courses.append({
-                            'code': course_code,
-                            'title': title,
-                            'description': text[:500] if len(text) > 20 else '',
-                            'credits': credits,
-                            'url': BASE_URL,
-                            'prerequisites': text  # Will be parsed later
-                        })
+        # New approach: Find all course entries using the pattern "COMP #### [credit]"
+        # Each course starts with "COMP #### [X.X credit]" and ends at the next course
+        # or at "a week." (the lecture hours line)
         
-        # Method 3: Search all text content for course codes
-        if len(courses) < 50:  # Still not enough courses
-            all_text = soup.get_text()
-            # Find all course code patterns
-            code_matches = re.finditer(r'COMP\s*(\d{4})', all_text, re.IGNORECASE)
-            for match in code_matches:
-                course_code = f"COMP {match.group(1)}"
-                if course_code not in seen_codes:
-                    seen_codes.add(course_code)
-                    # Extract surrounding text (50 chars before and after)
-                    start = max(0, match.start() - 100)
-                    end = min(len(all_text), match.end() + 300)
-                    context = all_text[start:end]
-                    
-                    # Try to extract title
-                    title_match = re.search(rf'{re.escape(course_code)}\s*[–\-]?\s*([^\n]+)', context)
-                    title = title_match.group(1).strip() if title_match else course_code
-                    
-                    credits_match = re.search(r'(\d+\.?\d*)\s*credit', context, re.IGNORECASE)
-                    credits = int(float(credits_match.group(1))) if credits_match else 3
-                    
-                    courses.append({
-                        'code': course_code,
-                        'title': title,
-                        'description': context[:500],
-                        'credits': credits,
-                        'url': BASE_URL,
-                        'prerequisites': context
-                    })
+        # Pattern to find course headers: "COMP 1405 [0.5 credit]"
+        course_header_pattern = r'COMP\s+(\d{4})\s+\[([^\]]+)\]'
+        
+        # Find all course headers and their positions
+        course_matches = list(re.finditer(course_header_pattern, all_text))
+        
+        print(f"Found {len(course_matches)} course headers")
+        
+        for i, match in enumerate(course_matches):
+            course_number = match.group(1)
+            credit_info = match.group(2)
+            course_code = f"COMP {course_number}"
+            
+            # Extract credits from the bracket content (e.g., "0.5 credit")
+            credits_match = re.search(r'(\d+\.?\d*)\s*credit', credit_info, re.IGNORECASE)
+            if credits_match:
+                credits = float(credits_match.group(1))
+            else:
+                # Default to 0.5 if not found
+                credits = 0.5
+            
+            # Find the end of this course's description
+            # It ends at the next course header or at a reasonable cutoff
+            start_pos = match.end()
+            
+            if i + 1 < len(course_matches):
+                # End at the next course header
+                end_pos = course_matches[i + 1].start()
+            else:
+                # Last course - take remaining text (limited)
+                end_pos = min(start_pos + 2000, len(all_text))
+            
+            # Extract the full course text
+            course_text = all_text[start_pos:end_pos].strip()
+            
+            # Try to find "a week." as a more precise end marker
+            week_match = re.search(r'a\s+week\.', course_text, re.IGNORECASE)
+            if week_match:
+                course_text = course_text[:week_match.end()].strip()
+            
+            # Extract title (first line after the header)
+            lines = course_text.split('\n')
+            title = lines[0].strip() if lines else course_code
+            
+            # Clean up title - remove any leftover bracket content
+            title = re.sub(r'^\s*\]?\s*', '', title)
+            
+            # Full description is everything
+            description = course_text
+            
+            # Extract prerequisites text for later parsing
+            prereq_text = course_text
+            
+            courses.append({
+                'code': course_code,
+                'title': title,
+                'description': description,
+                'credits': credits,
+                'url': BASE_URL,
+                'prerequisites': prereq_text
+            })
         
         # Sort courses by code
         courses.sort(key=lambda x: x['code'])
         
-        print(f"Found {len(courses)} COMP courses")
+        print(f"Processed {len(courses)} COMP courses")
         
         # Print breakdown by level
         level_counts = {}

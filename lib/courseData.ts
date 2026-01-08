@@ -10,96 +10,60 @@ function isNoLongerOffered(title: string, description: string): boolean {
          title.toLowerCase().includes('(no longer offered)');
 }
 
-// Helper function to extract and clean description
+// Helper function to clean description text
+// The database now has proper descriptions that start with the course title
+// We preserve newlines to maintain formatting like the Carleton website
 function cleanDescription(description: string, code: string): string {
   if (!description) return '';
   
-  // Normalize course code for matching (handle spaces)
-  const codeNormalized = code.replace(/\s+/g, '\\s*');
+  let cleaned = description.trim();
   
-  // Try multiple patterns to find the course description
-  // Pattern 1: Course code [credit] Title\nDescription...
-  const pattern1 = new RegExp(`${codeNormalized}\\s*\\[.*?credit.*?\\]\\s*([^\\n]+)\\s*\\n([^]+?)(?=\\n\\n(?:Includes:|Also listed as|Precludes|Prerequisite|Lectures|COMP\\s*\\d{4}|$))`, 'is');
-  let match = description.match(pattern1);
+  // Fix encoding issues (non-breaking spaces showing as A followed by special char)
+  // These appear as "COMPA 1405" instead of "COMP 1405"
+  cleaned = cleaned.replace(/A[\u00A0\u00AD\u2000-\u200F\u2028\u2029\uFEFF]/g, ' ');
+  cleaned = cleaned.replace(/[\u00A0\u00AD\u2000-\u200F\u2028\u2029\uFEFF]/g, ' ');
   
-  if (match && match[2]) {
-    // Found description after title
-    let desc = match[2].trim();
-    
-    // Remove trailing metadata sections
-    desc = desc.replace(/\n+(?:Includes:|Also listed as|Precludes|Prerequisite|Lectures).*$/is, '');
-    // Remove any course codes that appear (indicating next course)
-    desc = desc.replace(/\s+COMP\s*\d{4}.*$/i, '');
-    
-    return desc.trim();
-  }
+  // Clean up multiple spaces (but preserve newlines)
+  // Replace multiple spaces/tabs on the same line, but keep newlines
+  cleaned = cleaned.replace(/[ \t]+/g, ' '); // Multiple spaces/tabs -> single space
   
-  // Pattern 2: Just look for text after the course code that contains actual description
-  // Find position of course code
-  const codePos = description.search(new RegExp(`${codeNormalized}\\s*\\[.*?credit`, 'i'));
+  // Add newlines before common section markers that should be on separate lines
+  // These markers typically appear without proper spacing in the scraped data
+  const sectionMarkers = [
+    'Also listed as',
+    'Precludes',
+    'Prerequisite(s):',
+    'Lectures',
+    'Lecture',
+  ];
   
-  if (codePos !== -1) {
-    // Extract text starting from after course code pattern
-    let startPos = codePos;
-    // Find the end of the credit bracket
-    const creditEnd = description.indexOf(']', startPos);
-    if (creditEnd !== -1) {
-      // Start from after the title (usually first line after credit)
-      let descStart = description.indexOf('\n', creditEnd);
-      if (descStart === -1) descStart = creditEnd + 1;
-      
-      // Find where description ends (before metadata or next course)
-      const stopMarkers = [
-        /(\n|^)Includes:/i,
-        /(\n|^)Also listed as/i,
-        /(\n|^)Precludes additional credit/i,
-        /(\n|^)Prerequisite\(s\):/i,
-        /(\n|^)Lectures/i,
-        /\nCOMP\s*\d{4}/i // Next course code
-      ];
-      
-      let desc = description.substring(descStart);
-      let minEnd = desc.length;
-      
-      for (const marker of stopMarkers) {
-        const markerMatch = desc.search(marker);
-        if (markerMatch !== -1 && markerMatch < minEnd) {
-          minEnd = markerMatch;
-        }
-      }
-      
-      if (minEnd < desc.length) {
-        desc = desc.substring(0, minEnd);
-      }
-      
-      // Clean up the description
-      desc = desc.trim();
-      // Remove leading title if it's duplicated
-      desc = desc.replace(/^[A-Z][^.]{0,100}$/m, ''); // Remove single line that looks like a title
-      desc = desc.replace(/\n{3,}/g, '\n\n');
-      desc = desc.trim();
-      
-      if (desc.length > 20) { // Only return if we got meaningful content
-        return desc;
-      }
-    }
-  }
+  sectionMarkers.forEach(marker => {
+    // Add newline before marker if it's not already preceded by a newline
+    // Use a regex that looks for the marker at word boundaries
+    const regex = new RegExp(`([^\\n])(${marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    cleaned = cleaned.replace(regex, '$1\n$2');
+  });
   
-  // Fallback: return original but try to clean it up minimally
-  let cleaned = description;
-  
-  // Only remove clearly identifiable metadata sections, but preserve description content
-  // Remove metadata sections that are clearly separated
-  cleaned = cleaned.replace(/\n\n(?:Includes:|Also listed as|Precludes|Prerequisite|Lectures).*$/is, '');
-  
-  // Remove course code and credit info if at the start
-  cleaned = cleaned.replace(new RegExp(`^${codeNormalized}\\s*\\[.*?credit.*?\\]\\s*`, 'i'), '');
-  
-  // Remove any trailing course codes (indicating we went into next course)
-  cleaned = cleaned.replace(/\nCOMP\s*\d{4}.*$/i, '').trim();
-  
-  // Clean up excessive whitespace
+  // Clean up excessive newlines (more than 2 consecutive newlines -> 2 newlines)
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  
+  // Remove trailing spaces from each line
+  cleaned = cleaned.split('\n').map(line => line.trimEnd()).join('\n');
+  
+  return cleaned.trim();
+}
+
+// Helper function to clean title text (fix encoding issues)
+function cleanTitle(title: string): string {
+  if (!title) return '';
+  
+  let cleaned = title.trim();
+  
+  // Fix encoding issues - replace non-breaking spaces and similar
+  cleaned = cleaned.replace(/[\u00A0\u00AD\u2000-\u200F\u2028\u2029\uFEFF]/g, ' ');
+  
+  // Clean up multiple spaces
+  cleaned = cleaned.replace(/\s+/g, ' ');
   
   return cleaned.trim();
 }
@@ -118,12 +82,32 @@ export function transformCourses(
 
   // Create course objects
   activeCourses.forEach((dbCourse) => {
+    const rawDescription = dbCourse.description || '';
+    const cleanedDesc = cleanDescription(rawDescription, dbCourse.code);
+    
+    // Use cleaned description, or fall back to raw if parsing failed
+    let finalDescription = cleanedDesc;
+    
+    // If cleaned is too short but raw exists, try using raw with minimal cleanup
+    if (!cleanedDesc || (cleanedDesc.length < 50 && rawDescription.length > 100)) {
+      // Description might be in a different format - try minimal cleanup
+      finalDescription = rawDescription
+        .replace(/\n\n\s*(Includes:|Also listed as|Precludes|Prerequisite\(s\):|Lectures)[\s\S]*$/i, '')
+        .replace(/\n\s*COMP\s*\d{4}\s*\[.*$/i, '')
+        .trim();
+      
+      // Debug: Log when using fallback
+      if (finalDescription && finalDescription.length > cleanedDesc.length) {
+        console.log(`Course ${dbCourse.code}: Using fallback description extraction. Original length: ${rawDescription.length}, Cleaned: ${cleanedDesc.length}, Fallback: ${finalDescription.length}`);
+      }
+    }
+    
     courseMap.set(dbCourse.id, {
       id: dbCourse.id,
       code: dbCourse.code,
-      title: dbCourse.title,
+      title: cleanTitle(dbCourse.title), // Safety measure for any remaining encoding issues
       credits: dbCourse.credits,
-      description: cleanDescription(dbCourse.description || '', dbCourse.code),
+      description: finalDescription || cleanedDesc || rawDescription.trim(),
       prerequisites: [],
       level: dbCourse.level,
       department: dbCourse.department,
@@ -173,4 +157,5 @@ export function getCourseLevelColor(level: number): string {
   if (level >= 2000) return '#ca8a04'; // yellow-600
   return '#16a34a'; // green-600
 }
+
 

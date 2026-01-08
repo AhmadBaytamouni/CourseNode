@@ -79,7 +79,7 @@ export default function CourseDetails({
               <span className="w-1 h-4 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span>
               Description
             </h4>
-            <p className="text-sm text-gray-700 leading-relaxed">{course.description}</p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{course.description}</p>
           </div>
         )}
 
