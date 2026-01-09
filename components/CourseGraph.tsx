@@ -5,9 +5,11 @@ import {
   ReactFlow,
   Background,
   Node,
+  Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CourseNode from './CourseNode';
+import YearLabels from './YearLabels';
 import { CourseNode as CourseNodeType, CourseEdge } from '@/lib/types';
 
 const nodeTypes = {
@@ -35,7 +37,7 @@ export default function CourseGraph({
   );
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -54,6 +56,7 @@ export default function CourseGraph({
           size={1}
           color="rgba(59, 130, 246, 0.15)"
         />
+        <YearLabels />
       </ReactFlow>
     </div>
   );

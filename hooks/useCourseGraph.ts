@@ -26,21 +26,13 @@ export function useCourseGraph(
     return buildCourseEdges(courses, selectedSet, prerequisiteIds, unlockableIds);
   }, [courses, selectedCourseId, prerequisiteIdsStr, unlockableIdsStr]);
 
-  // State for nodes (allows position updates from dragging)
+  // State for nodes - always use computed positions since nodes are not draggable
   const [nodes, setNodes] = useState<CourseNode[]>(computedNodes);
 
-  // Update nodes when computed nodes change, preserving positions
+  // Update nodes when computed nodes change
+  // For tree layout, always use computed positions (nodes are not draggable)
   useEffect(() => {
-    setNodes(prevNodes => {
-      // Create a map of existing positions
-      const positionMap = new Map(prevNodes.map(n => [n.id, n.position]));
-      
-      // Merge computed nodes with existing positions
-      return computedNodes.map(node => ({
-        ...node,
-        position: positionMap.get(node.id) || node.position,
-      }));
-    });
+    setNodes(computedNodes);
   }, [computedNodes]);
 
   // Handle node changes from React Flow (e.g., dragging)
