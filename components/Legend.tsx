@@ -11,7 +11,7 @@ export default function Legend() {
   ];
 
   return (
-    <div className="absolute bottom-6 right-6 glass-strong border border-white/20 rounded-xl p-5 shadow-2xl z-10 hidden md:block animate-fade-in">
+    <div className="fixed bottom-6 right-6 lg:right-[400px] glass-strong border border-white/20 rounded-xl p-5 shadow-2xl z-20 hidden md:block animate-fade-in">
       <h3 className="font-bold mb-4 text-sm text-blue-400 uppercase tracking-wider flex items-center gap-2">
         <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
         Legend

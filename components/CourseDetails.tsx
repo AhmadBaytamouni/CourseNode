@@ -19,7 +19,7 @@ export default function CourseDetails({
 }: CourseDetailsProps) {
   if (!course) {
     return (
-      <div className="w-96 glass-strong border-l border-white/10 p-8 hidden lg:block">
+      <div className="w-full glass-strong border-l border-white/10 p-8 hidden lg:block h-full flex flex-col overflow-y-auto">
         <div className="text-center mt-12 space-y-4">
           <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shadow-lg border border-white/10">
             <svg
@@ -48,8 +48,20 @@ export default function CourseDetails({
   const dependentCourses = findDependentCourses(allCourses, course.id);
 
   return (
-    <div className="w-96 glass-strong border-l border-white/10 overflow-y-auto h-full hidden lg:block">
-      <div className="sticky top-0 glass-strong border-b border-white/10 p-6 z-10">
+    <div 
+      className="w-full glass-strong border-l border-white/10 flex flex-col" 
+      style={{ 
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <div 
+        className="glass-strong border-b border-white/10 p-6 z-10 bg-[#0a0a0f]/95" 
+        style={{ flexShrink: 0, flexGrow: 0 }}
+      >
         <div className="flex justify-between items-start">
           <div className="space-y-2">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.code}</h2>
@@ -69,7 +81,17 @@ export default function CourseDetails({
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div 
+        className="overflow-y-auto overflow-x-hidden" 
+        style={{ 
+          flex: '1 1 0%',
+          minHeight: 0,
+          position: 'relative',
+          height: '100%',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <div className="p-6 space-y-6 pb-8">
         <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
           <h3 className="text-lg font-bold text-gray-100">{course.title}</h3>
         </div>
@@ -150,6 +172,7 @@ export default function CourseDetails({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

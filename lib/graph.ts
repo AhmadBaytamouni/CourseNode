@@ -59,7 +59,7 @@ function buildDependencyMap(courses: Course[]): Map<string, Set<string>> {
   return dependencyMap;
 }
 
-// Calculate tree layout positions
+// Calculate tree layout positions (horizontal layout: years as rows, courses as columns)
 export function buildCourseNodes(
   courses: Course[],
   selectedCourseIds: Set<string>,
@@ -69,10 +69,10 @@ export function buildCourseNodes(
 ): CourseNode[] {
   const nodeWidth = 260;
   const nodeHeight = 180;
-  const horizontalSpacing = 400; // Space between year columns
-  const verticalSpacing = 200; // Space between courses in same year
+  const horizontalSpacing = 300; // Space between courses in same year (horizontal)
+  const verticalSpacing = 250; // Space between year rows (vertical)
   const yearStartX = 100; // Starting X position
-  const yearStartY = 100; // Starting Y position
+  const yearStartY = 150; // Starting Y position
 
   // Group courses by year level
   const coursesByYear = new Map<number, Course[]>();
@@ -93,10 +93,10 @@ export function buildCourseNodes(
   // Track positions to avoid overlaps
   const positions = new Map<string, { x: number; y: number }>();
   
-  // Position courses year by year (left to right: first year to fourth year)
+  // Position courses year by year (top to bottom: first year to fourth year)
   years.forEach((year) => {
     const yearCourses = coursesByYear.get(year)!;
-    const x = yearStartX + (year - 1) * horizontalSpacing;
+    const y = yearStartY + (year - 1) * verticalSpacing;
     
     // Sort courses within year to try to group related courses together
     // Sort by department first, then by code
@@ -107,7 +107,7 @@ export function buildCourseNodes(
       return a.code.localeCompare(b.code);
     });
     
-    // Position courses vertically within this year
+    // Position courses horizontally within this year
     // Sort courses: those with prerequisites in previous year first, then by department/code
     yearCourses.sort((a, b) => {
       // Courses with prerequisites from previous year should be prioritized
@@ -136,13 +136,13 @@ export function buildCourseNodes(
       return a.code.localeCompare(b.code);
     });
     
-    // Track Y positions used in this year
-    const usedYPositions = new Set<number>();
-    let currentY = yearStartY;
+    // Track X positions used in this year
+    const usedXPositions = new Set<number>();
+    let currentX = yearStartX;
     
     yearCourses.forEach((course) => {
       // Check if any prerequisite courses from previous year have been positioned
-      let preferredY: number | null = null;
+      let preferredX: number | null = null;
       
       if (course.prerequisites.length > 0) {
         const prevYearPrereqs = course.prerequisites
@@ -156,49 +156,49 @@ export function buildCourseNodes(
           .map(prereq => positions.get(prereq.prerequisite_id)!);
         
         if (prevYearPrereqs.length > 0) {
-          // Use average Y of prerequisites to align
-          preferredY = prevYearPrereqs.reduce((sum, pos) => sum + pos.y, 0) / prevYearPrereqs.length;
+          // Use average X of prerequisites to align
+          preferredX = prevYearPrereqs.reduce((sum, pos) => sum + pos.x, 0) / prevYearPrereqs.length;
         }
       }
       
-      // Find a good Y position
-      let finalY = currentY;
+      // Find a good X position
+      let finalX = currentX;
       
-      if (preferredY !== null) {
-        // Try to use preferred Y, or find nearest available spot
-        finalY = preferredY;
+      if (preferredX !== null) {
+        // Try to use preferred X, or find nearest available spot
+        finalX = preferredX;
         let offset = 0;
         let direction = 1;
         
-        while (usedYPositions.has(Math.round(finalY / verticalSpacing) * verticalSpacing)) {
-          finalY = preferredY + offset * direction * (verticalSpacing * 0.5);
+        while (usedXPositions.has(Math.round(finalX / horizontalSpacing) * horizontalSpacing)) {
+          finalX = preferredX + offset * direction * (horizontalSpacing * 0.5);
           direction *= -1;
           if (direction > 0) offset++;
           if (offset > 50) break; // Safety limit
         }
         
         // Snap to grid
-        finalY = Math.round(finalY / (verticalSpacing * 0.5)) * (verticalSpacing * 0.5);
+        finalX = Math.round(finalX / (horizontalSpacing * 0.5)) * (horizontalSpacing * 0.5);
       }
       
       // Ensure minimum spacing from other courses
-      const snappedY = Math.round(finalY / (verticalSpacing * 0.5)) * (verticalSpacing * 0.5);
-      let adjustedY = snappedY;
+      const snappedX = Math.round(finalX / (horizontalSpacing * 0.5)) * (horizontalSpacing * 0.5);
+      let adjustedX = snappedX;
       let attempts = 0;
       
-      while (usedYPositions.has(Math.round(adjustedY)) && attempts < 100) {
-        adjustedY = currentY;
-        currentY += verticalSpacing;
+      while (usedXPositions.has(Math.round(adjustedX)) && attempts < 100) {
+        adjustedX = currentX;
+        currentX += horizontalSpacing;
         attempts++;
       }
       
       if (attempts >= 100) {
-        adjustedY = currentY;
+        adjustedX = currentX;
       }
       
-      usedYPositions.add(Math.round(adjustedY));
-      positions.set(course.id, { x, y: adjustedY });
-      currentY = Math.max(currentY, adjustedY + verticalSpacing);
+      usedXPositions.add(Math.round(adjustedX));
+      positions.set(course.id, { x: adjustedX, y });
+      currentX = Math.max(currentX, adjustedX + horizontalSpacing);
     });
   });
 

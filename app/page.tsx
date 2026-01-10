@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ReactFlowProvider } from '@xyflow/react';
 import { Course } from '@/lib/types';
 import { getAllCourses, getCourseByCode, formatCredits } from '@/lib/courseData';
 import { useCourseSelection } from '@/hooks/useCourseSelection';
@@ -156,32 +155,33 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <CourseSelector
-        courses={courses}
-        onClearSelection={clearSelection}
-        onSearch={setSearchQuery}
-      />
+    <div className="min-h-screen flex flex-col overflow-y-auto overflow-x-hidden">
+      <div className="fixed top-0 left-0 right-0 z-30 flex-shrink-0">
+        <CourseSelector
+          courses={courses}
+          onClearSelection={clearSelection}
+          onSearch={setSearchQuery}
+        />
+      </div>
 
-      <div className="flex-1 flex relative">
-        <div className="flex-1 relative">
-          <ReactFlowProvider>
-            <CourseGraph
-              nodes={filteredNodes}
-              edges={filteredEdges}
-              onNodeClick={handleNodeClick}
-              onNodesChange={onNodesChange}
-            />
-          </ReactFlowProvider>
-          <Legend />
+      <div className="flex-1 flex relative min-h-screen" style={{ paddingTop: '170px' }}>
+        <div className="flex-1 relative min-w-0" style={{ marginRight: '480px' }}>
+          <CourseGraph
+            nodes={filteredNodes}
+            edges={filteredEdges}
+            onNodeClick={handleNodeClick}
+            onNodesChange={onNodesChange}
+          />
         </div>
 
-        <CourseDetails
-          course={selectedCourse}
-          allCourses={courses}
-          onClose={() => setSelectedCourse(null)}
-          onCourseClick={handleCourseClick}
-        />
+        <div className="hidden lg:block flex-shrink-0 fixed z-20" style={{ top: '150px', height: 'calc(100vh - 150px)', width: '480px', left: 'calc(100% - 450px)' }}>
+          <CourseDetails
+            course={selectedCourse}
+            allCourses={courses}
+            onClose={() => setSelectedCourse(null)}
+            onCourseClick={handleCourseClick}
+          />
+        </div>
       </div>
 
       {/* Mobile course details modal */}

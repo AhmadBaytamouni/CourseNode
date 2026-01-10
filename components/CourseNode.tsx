@@ -1,7 +1,6 @@
 'use client';
 
 import { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Course } from '@/lib/types';
 import { getCourseLevelColor, formatCredits } from '@/lib/courseData';
 
@@ -13,7 +12,13 @@ interface CourseNodeData {
   isFaded?: boolean;
 }
 
-function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
+interface CourseNodeProps {
+  data: CourseNodeData;
+  id: string;
+  onClick?: () => void;
+}
+
+function CourseNodeComponent({ data, onClick }: CourseNodeProps) {
   const { course, isSelected, isPrerequisite, isUnlockable, isFaded } = data;
   const levelColor = getCourseLevelColor(course.level);
 
@@ -36,6 +41,7 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
 
   return (
     <div
+      onClick={onClick}
       className={`rounded-xl ${nodeClasses} p-5 w-[240px] h-[160px] transition-all duration-300 cursor-pointer flex flex-col ${
         isSelected ? 'scale-110 z-20 ring-4 ring-blue-500/30 animate-pulse-slow' : 
         isPrerequisite ? 'scale-105 z-10 ring-2 ring-indigo-500/20' : 
@@ -47,8 +53,6 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
         borderWidth: isSelected ? '2px' : '1px',
       }}
     >
-      <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-blue-400/60 !border-2 !border-blue-600" />
-      
       <div className="text-center space-y-2.5 flex-1 flex flex-col justify-between">
         <div className={`font-bold text-lg tracking-tight ${
           isSelected ? 'text-blue-300' : 
@@ -72,11 +76,9 @@ function CourseNodeComponent({ data }: NodeProps<CourseNodeData>) {
           isUnlockable ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30' :
           'bg-white/10 text-gray-300 border border-white/20'
         }`}>
-          {formatCredits(course.credits)} • {course.level}-level
+          {formatCredits(course.credits)}
         </div>
       </div>
-
-      <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-blue-400/60 !border-2 !border-blue-600" />
     </div>
   );
 }

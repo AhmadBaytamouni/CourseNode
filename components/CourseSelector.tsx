@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Course } from '@/lib/types';
+import { getCourseLevelColor } from '@/lib/courseData';
 
 interface CourseSelectorProps {
   courses: Course[];
@@ -28,9 +29,9 @@ export default function CourseSelector({
   );
 
   return (
-    <div className="glass-strong border-b border-white/10 shadow-2xl relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
+    <div className="border-b border-white/10 shadow-2xl relative overflow-hidden bg-[#1a1a2e]">
+      <div className="px-8 py-4">
+        <div className="flex items-center justify-between mb-4">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
               Carleton CS Prerequisites
@@ -41,7 +42,7 @@ export default function CourseSelector({
           </div>
           <button
             onClick={onClearSelection}
-            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50 border border-blue-400/30"
+            className="px-8 py-3 glass-strong rounded-lg text-base font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/20"
             aria-label="Clear selection"
           >
             Clear
@@ -76,12 +77,28 @@ export default function CourseSelector({
             {levels.map((level, idx) => (
               <div
                 key={level}
-                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10"
+                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2"
               >
+                <div
+                  className="w-4 h-4 border rounded flex-shrink-0"
+                  style={{ borderColor: getCourseLevelColor(level), borderWidth: '2px' }}
+                />
                 <span className="text-blue-400 font-bold">{level}-level:</span>{' '}
                 <span className="text-gray-200">{levelCounts[idx]}</span>
               </div>
             ))}
+            <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-500 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded flex-shrink-0 ring-2 ring-blue-500/30" />
+              <span className="text-gray-200 font-semibold">Selected course</span>
+            </div>
+            <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2">
+              <div className="w-4 h-4 border border-indigo-500/60 bg-gradient-to-br from-indigo-500/15 to-purple-500/15 rounded flex-shrink-0 ring-1 ring-indigo-500/20" />
+              <span className="text-gray-200 font-semibold">Prerequisite</span>
+            </div>
+            <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2">
+              <div className="w-4 h-4 border border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 to-teal-500/15 rounded flex-shrink-0 ring-1 ring-emerald-500/20" />
+              <span className="text-gray-200 font-semibold">Unlockable</span>
+            </div>
           </div>
         </div>
       </div>
