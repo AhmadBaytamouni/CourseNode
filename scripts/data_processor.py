@@ -21,18 +21,17 @@ def extract_level(code: str) -> int:
         return int(match.group(1)) * 1000
     return 1000
 
-def parse_prerequisites(text: str) -> List[str]:
-    """Parse prerequisite text and extract course codes."""
+def parse_prerequisites(text: str) -> List[Dict]:
+    """Parse prerequisite text and extract course codes with AND/OR logic."""
     if not text:
         return []
     
-    # Normalize text
-    text = text.lower()
-    
-    # Find prerequisite section
+    # Find prerequisite section (keep original case for better parsing)
+    # Look for "Prerequisite(s):" pattern - handle both "Prerequisite:" and "Prerequisite(s):"
+    # Prioritize matching up to section markers (Lectures, Corequisite, etc.) over periods
     prereq_patterns = [
-        r'prerequisite[s]?[:\s]+(.+?)(?:\.|corequisite|exclusion|$)',
-        r'prerequisite[s]?[:\s]+(.+?)(?:\.|$)',
+        r'prerequisite[s]?[\(\)s]*[:\s]+(.+?)(?:Lectures|Corequisite|Exclusion|Includes:|Also listed as|$)',
+        r'prerequisite[s]?[\(\)s]*[:\s]+(.+?)(?:\.|$)',
     ]
     
     prereq_text = None
@@ -45,15 +44,77 @@ def parse_prerequisites(text: str) -> List[str]:
     if not prereq_text:
         return []
     
-    # Extract course codes
-    codes = re.findall(r'COMP\s*\d{4}', prereq_text, re.IGNORECASE)
-    normalized = []
-    for code in codes:
-        normalized_code = normalize_course_code(code)
-        if normalized_code not in normalized:
-            normalized.append(normalized_code)
+    # Clean up the prerequisite text - remove "with a minimum grade" clauses but keep the rest
+    # Match "with a minimum grade of X" or "with a minimum grade X" but stop before "and" or the end
+    prereq_text = re.sub(r'\s+with\s+a\s+minimum\s+grade\s+(?:of\s+)?[^and]+\s*(?=and|$)', '', prereq_text, flags=re.IGNORECASE)
+    # Remove trailing periods and commas
+    prereq_text = re.sub(r'[.,]+$', '', prereq_text)
+    prereq_text = prereq_text.strip()
     
-    return normalized
+    prerequisites = []
+    
+    # Check if the text contains "or" (without parentheses) - if so, treat all as OR
+    # Pattern: COMP XXXX or COMP YYYY (not in parentheses)
+    has_or_without_parens = re.search(r'COMP\s+\d{4}\s+(?:or|OR)\s+COMP\s+\d{4}', prereq_text, re.IGNORECASE)
+    if has_or_without_parens and not re.search(r'\([^)]*(?:or|OR)[^)]*\)', prereq_text, re.IGNORECASE):
+        # Simple OR case without parentheses: "COMP 1005 or COMP 1405"
+        codes = re.findall(r'COMP\s*\d{4}', prereq_text, re.IGNORECASE)
+        for code in codes:
+            normalized_code = normalize_course_code(code)
+            prerequisites.append({
+                'code': normalized_code,
+                'logic_type': 'OR'
+            })
+    else:
+        # Handle complex cases with parentheses and AND/OR mixing
+        # First, handle OR groups (parentheses with "or")
+        # Pattern: (COMP XXXX or COMP YYYY)
+        or_group_pattern = r'\(([^)]*(?:or|OR)[^)]*)\)'
+        or_groups = list(re.finditer(or_group_pattern, prereq_text, re.IGNORECASE))
+        processed_positions = []
+        
+        for match in or_groups:
+            group_text = match.group(1)
+            codes = re.findall(r'COMP\s*\d{4}', group_text, re.IGNORECASE)
+            for code in codes:
+                normalized_code = normalize_course_code(code)
+                prerequisites.append({
+                    'code': normalized_code,
+                    'logic_type': 'OR'
+                })
+            processed_positions.append((match.start(), match.end()))
+        
+        # Remove processed OR groups from text to avoid double-counting
+        remaining_text = prereq_text
+        for start, end in sorted(processed_positions, reverse=True):
+            remaining_text = remaining_text[:start] + ' ' + remaining_text[end:]
+        
+        # Extract remaining course codes (these are AND by default when not in OR groups)
+        remaining_codes = re.findall(r'COMP\s*\d{4}', remaining_text, re.IGNORECASE)
+        for code in remaining_codes:
+            normalized_code = normalize_course_code(code)
+            # Check if we already added this in an OR group
+            if not any(p['code'] == normalized_code for p in prerequisites):
+                prerequisites.append({
+                    'code': normalized_code,
+                    'logic_type': 'AND'
+                })
+    
+    # Remove duplicates while preserving order (OR takes precedence if same code appears in both)
+    seen = {}
+    unique_prereqs = []
+    for prereq in prerequisites:
+        code = prereq['code']
+        if code not in seen:
+            seen[code] = prereq
+            unique_prereqs.append(prereq)
+        elif prereq['logic_type'] == 'OR' and seen[code]['logic_type'] == 'AND':
+            # Replace AND with OR if same code appears in OR group
+            idx = unique_prereqs.index(seen[code])
+            unique_prereqs[idx] = prereq
+            seen[code] = prereq
+    
+    return unique_prereqs
 
 def process_course(raw_course: Dict) -> Optional[Dict]:
     """Process a single raw course entry."""
@@ -78,9 +139,12 @@ def process_course(raw_course: Dict) -> Optional[Dict]:
         else:
             credits = float(credits_text)
         
-        # Extract prerequisites
+        # Extract prerequisites with logic types
         prereq_text = raw_course.get('prerequisites', '') or description
-        prerequisites = parse_prerequisites(prereq_text)
+        prerequisites_with_logic = parse_prerequisites(prereq_text)
+        
+        # Store prerequisites as list of dicts with code and logic_type
+        prerequisites = prerequisites_with_logic
         
         processed = {
             'code': code,

@@ -40,13 +40,15 @@ export default function CourseSelector({
               Explore course prerequisites and build your academic path
             </p>
           </div>
-          <button
-            onClick={onClearSelection}
-            className="px-8 py-3 glass-strong rounded-lg text-base font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/20"
-            aria-label="Clear selection"
-          >
-            Clear
-          </button>
+          <div className="flex items-end">
+            <button
+              onClick={onClearSelection}
+              className="px-8 py-3 glass-strong rounded-lg text-base font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/20"
+              aria-label="Clear selection"
+            >
+              Clear
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-4 flex-wrap">

@@ -200,7 +200,16 @@ def insert_prerequisites(
             print(f"Warning: Could not delete existing prerequisites for {course['code']}: {e}")
         
         # Insert new prerequisites
-        for prereq_code in course.get('prerequisites', []):
+        prerequisites_list = course.get('prerequisites', [])
+        for prereq in prerequisites_list:
+            # Handle both old format (string) and new format (dict)
+            if isinstance(prereq, dict):
+                prereq_code = prereq.get('code')
+                logic_type = prereq.get('logic_type', 'AND')
+            else:
+                prereq_code = prereq
+                logic_type = 'AND'  # Default to AND for old format
+            
             prereq_id = code_to_id.get(prereq_code)
             if prereq_id:
                 try:
@@ -209,7 +218,7 @@ def insert_prerequisites(
                         'prerequisite_id': prereq_id,
                         'is_corequisite': False,
                         'is_exclusion': False,
-                        'logic_type': None,
+                        'logic_type': logic_type,
                     })
                 except Exception as e:
                     print(f"Error inserting prerequisite {prereq_code} for {course['code']}: {e}")

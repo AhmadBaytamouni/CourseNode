@@ -95,52 +95,135 @@ export default function CourseDetails({
           </div>
         )}
 
-        {course.prerequisites.length > 0 && (
-          <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
-            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
-              Prerequisites ({course.prerequisites.length})
-            </h4>
-            <div className="space-y-2.5">
-              {course.prerequisites.map((prereq, idx) => {
-                const prereqCourse = allCourses.find((c) => c.id === prereq.prerequisite_id);
-                if (!prereqCourse) return null;
+        {course.prerequisites.length > 0 && (() => {
+          // Group prerequisites by logic type for cleaner display
+          const orPrereqs = course.prerequisites.filter(p => p.logic_type === 'OR');
+          const andPrereqs = course.prerequisites.filter(p => !p.logic_type || p.logic_type === 'AND');
+          
+          return (
+            <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
+              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
+                Prerequisites ({course.prerequisites.length})
+              </h4>
+              <div className="space-y-3">
+                {/* OR Group (if any) */}
+                {orPrereqs.length > 0 && (
+                  <div className="space-y-2">
+                    {orPrereqs.map((prereq, idx) => {
+                      const prereqCourse = allCourses.find((c) => c.id === prereq.prerequisite_id);
+                      if (!prereqCourse) return null;
 
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => onCourseClick(prereqCourse.code)}
-                    className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-indigo-500/30 hover:border-indigo-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-indigo-500/20 transform hover:scale-[1.02]"
-                  >
-                    <div className="font-bold text-sm text-blue-300 group-hover:text-blue-200">
-                      {prereqCourse.code}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium group-hover:text-gray-300">
-                      {prereqCourse.title}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      {prereq.is_corequisite && (
-                        <span className="inline-block text-xs px-2.5 py-1 bg-orange-500/20 text-orange-300 rounded-lg font-semibold border border-orange-500/30">
-                          Corequisite
-                        </span>
-                      )}
-                      {prereq.is_exclusion && (
-                        <span className="inline-block text-xs px-2.5 py-1 bg-red-500/20 text-red-300 rounded-lg font-semibold border border-red-500/30">
-                          Exclusion
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+                      return (
+                        <div key={idx} className="flex items-center gap-2">
+                          {idx > 0 && (
+                            <div className="flex-shrink-0 px-2 py-1 bg-purple-500/20 text-purple-300 rounded-md text-xs font-bold border border-purple-500/30">
+                              OR
+                            </div>
+                          )}
+                          <button
+                            onClick={() => onCourseClick(prereqCourse.code)}
+                            className="flex-1 text-left px-4 py-3 glass hover:bg-white/10 border border-purple-500/30 hover:border-purple-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-purple-500/20 transform hover:scale-[1.02]"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="font-bold text-sm text-purple-300 group-hover:text-purple-200">
+                                {prereqCourse.code}
+                              </div>
+                              <div className="text-xs text-purple-400/80 font-semibold">
+                                {formatCredits(prereqCourse.credits)}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium group-hover:text-gray-300">
+                              {prereqCourse.title}
+                            </div>
+                            <div className="flex gap-2 mt-2">
+                              {prereq.is_corequisite && (
+                                <span className="inline-block text-xs px-2.5 py-1 bg-orange-500/20 text-orange-300 rounded-lg font-semibold border border-orange-500/30">
+                                  Corequisite
+                                </span>
+                              )}
+                              {prereq.is_exclusion && (
+                                <span className="inline-block text-xs px-2.5 py-1 bg-red-500/20 text-red-300 rounded-lg font-semibold border border-red-500/30">
+                                  Exclusion
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* AND Group (if any) */}
+                {andPrereqs.length > 0 && (
+                  <div className="space-y-2.5">
+                    {orPrereqs.length > 0 && (
+                      <div className="flex items-center gap-2 my-2">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                        <div className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-md text-xs font-bold border border-pink-500/30">
+                          AND
+                        </div>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      </div>
+                    )}
+                    {andPrereqs.map((prereq, idx) => {
+                      const prereqCourse = allCourses.find((c) => c.id === prereq.prerequisite_id);
+                      if (!prereqCourse) return null;
+
+                      return (
+                        <div key={idx}>
+                          {idx > 0 && (
+                            <div className="flex items-center gap-2 my-2">
+                              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                              <div className="px-2 py-0.5 bg-pink-500/20 text-pink-400/70 rounded text-xs font-semibold border border-pink-500/30">
+                                AND
+                              </div>
+                              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => onCourseClick(prereqCourse.code)}
+                            className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-pink-500/30 hover:border-pink-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-pink-500/20 transform hover:scale-[1.02]"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="font-bold text-sm text-pink-300 group-hover:text-pink-200">
+                                {prereqCourse.code}
+                              </div>
+                              <div className="text-xs text-pink-400/80 font-semibold">
+                                {formatCredits(prereqCourse.credits)}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium group-hover:text-gray-300">
+                              {prereqCourse.title}
+                            </div>
+                            <div className="flex gap-2 mt-2">
+                              {prereq.is_corequisite && (
+                                <span className="inline-block text-xs px-2.5 py-1 bg-orange-500/20 text-orange-300 rounded-lg font-semibold border border-orange-500/30">
+                                  Corequisite
+                                </span>
+                              )}
+                              {prereq.is_exclusion && (
+                                <span className="inline-block text-xs px-2.5 py-1 bg-red-500/20 text-red-300 rounded-lg font-semibold border border-red-500/30">
+                                  Exclusion
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {dependentCourses.length > 0 && (
           <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
-            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <span className="w-1 h-4 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></span>
+            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></span>
               Required For ({dependentCourses.length})
             </h4>
             <div className="space-y-2.5">
@@ -148,12 +231,17 @@ export default function CourseDetails({
                 <button
                   key={depCourse.id}
                   onClick={() => onCourseClick(depCourse.code)}
-                  className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-white/20 hover:border-white/30 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                  className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-emerald-500/30 hover:border-emerald-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-emerald-500/20 transform hover:scale-[1.02]"
                 >
-                  <div className="font-bold text-sm text-gray-200 group-hover:text-gray-100">
-                    {depCourse.code}
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold text-sm text-emerald-300 group-hover:text-emerald-200">
+                      {depCourse.code}
+                    </div>
+                    <div className="text-xs text-emerald-400/80 font-semibold">
+                      {formatCredits(depCourse.credits)}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium group-hover:text-gray-300">
+                  <div className="text-xs text-gray-400 mt-1 line-clamp-1 font-medium group-hover:text-emerald-300">
                     {depCourse.title}
                   </div>
                 </button>

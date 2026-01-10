@@ -24,6 +24,9 @@ export function useCourseSelection(courses: Course[]) {
     setSelectedCourseId(courseId);
     
     // Collect all prerequisite IDs (direct prerequisites)
+    // Note: We highlight ALL prerequisites regardless of AND/OR logic:
+    // - For AND: All are required, so highlighting all is correct
+    // - For OR: Multiple options available, so highlighting all shows choices
     const prereqIds = new Set<string>();
     course.prerequisites.forEach(prereq => {
       if (!prereq.is_exclusion) {
