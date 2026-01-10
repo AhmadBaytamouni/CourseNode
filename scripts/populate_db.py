@@ -103,19 +103,27 @@ def load_env_file(filepath: str) -> Dict[str, str]:
 
 def get_supabase_client() -> SupabaseClient:
     """Create and return Supabase client."""
-    # Try to load from .env file in project root or scripts directory
+    # Try to load from .env or .env.local file in project root or scripts directory
     env_vars = {}
-    for env_file in ['../.env', '.env', '../../.env']:
+    for env_file in ['../.env.local', '../.env', '.env.local', '.env', '../../.env.local', '../../.env']:
         if os.path.exists(env_file):
             env_vars.update(load_env_file(env_file))
-            break
+            # Don't break - keep checking to allow multiple files to override
     
     # Load from environment variables (these take precedence over .env file)
-    url = os.getenv('SUPABASE_URL') or env_vars.get('SUPABASE_URL')
+    # Also check for NEXT_PUBLIC_ prefixed versions (used by Next.js)
+    url = (os.getenv('SUPABASE_URL') or 
+           os.getenv('NEXT_PUBLIC_SUPABASE_URL') or
+           env_vars.get('SUPABASE_URL') or 
+           env_vars.get('NEXT_PUBLIC_SUPABASE_URL'))
     key = (os.getenv('SUPABASE_SERVICE_ROLE_KEY') or 
            os.getenv('SUPABASE_ANON_KEY') or 
+           os.getenv('NEXT_PUBLIC_SUPABASE_ANON_KEY') or
+           os.getenv('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY') or
            env_vars.get('SUPABASE_SERVICE_ROLE_KEY') or 
-           env_vars.get('SUPABASE_ANON_KEY'))
+           env_vars.get('SUPABASE_ANON_KEY') or
+           env_vars.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or
+           env_vars.get('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'))
     
     if not url or not key:
         print("Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) must be set")

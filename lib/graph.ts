@@ -67,9 +67,9 @@ export function buildCourseNodes(
   unlockableIds: Set<string> = new Set(),
   shouldFade: (courseId: string) => boolean = () => false
 ): CourseNode[] {
-  const nodeWidth = 260;
-  const nodeHeight = 180;
-  const horizontalSpacing = 300; // Space between courses in same year (horizontal)
+  const nodeWidth = 300;
+  const nodeHeight = 200;
+  const horizontalSpacing = 320; // Space between courses in same year (horizontal)
   const verticalSpacing = 250; // Space between year rows (vertical)
   const yearStartX = 100; // Starting X position
   const yearStartY = 150; // Starting Y position

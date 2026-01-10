@@ -42,7 +42,7 @@ function CourseNodeComponent({ data, onClick }: CourseNodeProps) {
   return (
     <div
       onClick={onClick}
-      className={`rounded-xl ${nodeClasses} p-5 w-[240px] h-[160px] transition-all duration-300 cursor-pointer flex flex-col ${
+      className={`rounded-xl ${nodeClasses} p-5 w-[280px] min-h-[180px] transition-all duration-300 cursor-pointer flex flex-col ${
         isSelected ? 'scale-110 z-20 ring-4 ring-blue-500/30 animate-pulse-slow' : 
         isPrerequisite ? 'scale-105 z-10 ring-2 ring-indigo-500/20' : 
         isUnlockable ? 'scale-105 z-10 ring-2 ring-emerald-500/20' :
@@ -62,7 +62,7 @@ function CourseNodeComponent({ data, onClick }: CourseNodeProps) {
         }`}>
           {course.code}
         </div>
-        <div className={`text-xs leading-relaxed line-clamp-2 font-medium min-h-[2.5rem] flex items-center justify-center ${
+        <div className={`text-xs leading-relaxed line-clamp-4 font-medium min-h-[3.5rem] flex items-center justify-center ${
           isSelected ? 'text-blue-200' : 
           isPrerequisite ? 'text-indigo-200' : 
           isUnlockable ? 'text-emerald-200' :

@@ -4,10 +4,30 @@ import { fetchCourses, fetchPrerequisites } from './supabase';
 // Helper function to check if a course is no longer offered
 function isNoLongerOffered(title: string, description: string): boolean {
   const text = `${title} ${description}`.toLowerCase();
-  return text.includes('no longer offered') || 
-         text.includes('(no longer offered)') ||
-         text.includes('not offered anymore') ||
-         title.toLowerCase().includes('(no longer offered)');
+  
+  // Check if the title itself indicates it's no longer offered
+  if (title.toLowerCase().includes('(no longer offered)')) {
+    return true;
+  }
+  
+  // Check for patterns that indicate THIS course is no longer offered
+  // But ignore mentions of other courses being "no longer offered"
+  // Patterns like "This course is no longer offered" or "not offered" at the start
+  const noLongerOfferedPatterns = [
+    /^(this course|course|it).*no longer offered/i,
+    /^.*is\s+no\s+longer\s+offered\.?$/i,
+    /^.*not\s+offered\s+(anymore|any\s+longer)/i,
+  ];
+  
+  // Check if the description starts with a "no longer offered" statement
+  const descStart = description.trim().substring(0, 200).toLowerCase();
+  for (const pattern of noLongerOfferedPatterns) {
+    if (pattern.test(descStart)) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 // Helper function to clean description text
@@ -75,8 +95,13 @@ export function transformCourses(
 ): Course[] {
   const courseMap = new Map<string, Course>();
 
-  // Filter out courses that are no longer offered
+  // Filter out courses that are no longer offered and 5000-level courses (graduate level)
   const activeCourses = dbCourses.filter((dbCourse) => {
+    // Exclude 5000-level courses (graduate level, not undergraduate)
+    if (dbCourse.level >= 5000) {
+      return false;
+    }
+    // Exclude courses that are no longer offered
     return !isNoLongerOffered(dbCourse.title, dbCourse.description || '');
   });
 

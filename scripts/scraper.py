@@ -147,7 +147,10 @@ def scrape_all_comp_courses() -> List[Dict]:
         # or at "a week." (the lecture hours line)
         
         # Pattern to find course headers: "COMP 1405 [0.5 credit]"
-        course_header_pattern = r'COMP\s+(\d{4})\s+\[([^\]]+)\]'
+        # Use word boundary and ensure bracket immediately follows to only match actual course listings
+        # This prevents matching course codes mentioned in descriptions (e.g., "precludes COMP 3109")
+        # The pattern requires: COMP + 4 digits + space(s) + opening bracket
+        course_header_pattern = r'(?<!\w)COMP\s+(\d{4})\s+\[([^\]]+)\]'
         
         # Find all course headers and their positions
         course_matches = list(re.finditer(course_header_pattern, all_text))
@@ -156,6 +159,12 @@ def scrape_all_comp_courses() -> List[Dict]:
         
         for i, match in enumerate(course_matches):
             course_number = match.group(1)
+            course_level = int(course_number[0]) * 1000
+            
+            # Filter out 5000-level courses (graduate level, not undergraduate)
+            if course_level >= 5000:
+                continue
+                
             credit_info = match.group(2)
             course_code = f"COMP {course_number}"
             

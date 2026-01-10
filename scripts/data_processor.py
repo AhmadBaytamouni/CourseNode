@@ -62,6 +62,11 @@ def process_course(raw_course: Dict) -> Optional[Dict]:
         if not code:
             return None
         
+        # Extract level and filter out 5000-level courses (graduate level, not undergraduate)
+        level = extract_level(code)
+        if level >= 5000:
+            return None
+        
         title = raw_course.get('title', '').strip()
         description = raw_course.get('description', '').strip()
         
@@ -82,7 +87,7 @@ def process_course(raw_course: Dict) -> Optional[Dict]:
             'title': title,
             'credits': credits,
             'description': description,
-            'level': extract_level(code),
+            'level': level,
             'department': 'COMP',
             'prerequisites': prerequisites,
             'corequisites': raw_course.get('corequisites', []),
