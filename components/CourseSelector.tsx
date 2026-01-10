@@ -75,21 +75,27 @@ export default function CourseSelector({
 
           <div className="flex items-center gap-3 flex-wrap">
             {levels.map((level, idx) => (
-              <div
+              <button
                 key={level}
-                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2"
+                onClick={() => {
+                  const element = document.getElementById(`year-${level}`);
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 cursor-pointer"
               >
                 <div
                   className="w-4 h-4 border rounded flex-shrink-0"
                   style={{ borderColor: getCourseLevelColor(level), borderWidth: '2px' }}
                 />
-                <span className="text-blue-400 font-bold">{level}-level:</span>{' '}
+                <span className="text-blue-400 font-bold">{level}-Level:</span>{' '}
                 <span className="text-gray-200">{levelCounts[idx]}</span>
-              </div>
+              </button>
             ))}
             <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-blue-500 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded flex-shrink-0 ring-2 ring-blue-500/30" />
-              <span className="text-gray-200 font-semibold">Selected course</span>
+              <span className="text-gray-200 font-semibold">Selected Course</span>
             </div>
             <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2">
               <div className="w-4 h-4 border border-indigo-500/60 bg-gradient-to-br from-indigo-500/15 to-purple-500/15 rounded flex-shrink-0 ring-1 ring-indigo-500/20" />

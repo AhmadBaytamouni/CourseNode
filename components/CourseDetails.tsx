@@ -62,22 +62,11 @@ export default function CourseDetails({
         className="glass-strong border-b border-white/10 p-6 z-10 bg-[#0a0a0f]/95" 
         style={{ flexShrink: 0, flexGrow: 0 }}
       >
-        <div className="flex justify-between items-start">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.code}</h2>
-            <p className="text-sm font-semibold text-gray-300 px-3 py-1.5 glass rounded-lg inline-block border border-white/10">
-              {formatCredits(course.credits)} • {course.level}-level
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-110 border border-white/10 hover:border-white/20"
-            aria-label="Close details"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.code}</h2>
+          <p className="text-sm font-semibold text-gray-300 px-3 py-1.5 glass rounded-lg inline-block border border-white/10">
+            {formatCredits(course.credits)} • {course.level}-level
+          </p>
         </div>
       </div>
 

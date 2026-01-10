@@ -159,13 +159,16 @@ export default function Home() {
       <div className="fixed top-0 left-0 right-0 z-30 flex-shrink-0">
         <CourseSelector
           courses={courses}
-          onClearSelection={clearSelection}
+          onClearSelection={() => {
+            clearSelection();
+            setSelectedCourse(null);
+          }}
           onSearch={setSearchQuery}
         />
       </div>
 
       <div className="flex-1 flex relative min-h-screen" style={{ paddingTop: '170px' }}>
-        <div className="flex-1 relative min-w-0" style={{ marginRight: '480px' }}>
+        <div className="flex-1 relative min-w-0" style={{ marginRight: '450px' }}>
           <CourseGraph
             nodes={filteredNodes}
             edges={filteredEdges}
@@ -174,7 +177,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="hidden lg:block flex-shrink-0 fixed z-20" style={{ top: '150px', height: 'calc(100vh - 150px)', width: '480px', left: 'calc(100% - 450px)' }}>
+        <div className="hidden lg:block flex-shrink-0 fixed z-20" style={{ top: '150px', height: 'calc(100vh - 150px)', width: '450px', right: '0' }}>
           <CourseDetails
             course={selectedCourse}
             allCourses={courses}

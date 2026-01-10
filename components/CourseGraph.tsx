@@ -131,17 +131,6 @@ export default function CourseGraph({
       ref={containerRef}
       className="w-full relative"
     >
-      {/* Background dots pattern */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle, rgba(59, 130, 246, 0.15) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-        }}
-      />
-      
       {/* SVG overlay for edges */}
       {nodePositions.size > 0 && (
         <svg
@@ -175,11 +164,11 @@ export default function CourseGraph({
       <YearLabels />
 
       {/* Main content container */}
-      <div className="relative px-6 pb-6 pt-2">
+      <div className="relative px-8 pb-6 pt-4">
         {nodesByYear.map(([year, yearNodes]) => (
           <div key={year} className="mb-8">
             {/* Year header */}
-            <div className="sticky top-2 z-10 mb-4">
+            <div id={`year-${year * 1000}`} className="sticky top-2 z-10 mb-4 scroll-mt-[180px]">
               <div className="glass-strong rounded-lg px-4 py-2 border border-white/20 shadow-lg inline-block bg-[#0a0a0f]/95 backdrop-blur-md">
                 <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">
                   {year === 1 ? 'First Year' : year === 2 ? 'Second Year' : year === 3 ? 'Third Year' : 'Fourth Year'}
