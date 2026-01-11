@@ -25,7 +25,7 @@ An interactive web application that visualizes Computer Science course prerequis
 
 ## For End Users
 
-Simply visit the [live website](https://your-vercel-url.vercel.app) to use the application. No installation or setup required!
+Simply visit the [live website](https://carleton-cs-course-map.vercel.app/) to use the application. No installation or setup required!
 
 ## For Developers
 
