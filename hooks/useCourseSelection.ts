@@ -2,13 +2,19 @@ import { useState, useCallback } from 'react';
 import { Course } from '@/lib/types';
 import { calculateUnlockableCourses, findDependentCourses } from '@/lib/graph';
 
+/**
+ * Custom hook for managing course selection state
+ * Handles selected course, prerequisites, and unlockable courses
+ */
 export function useCourseSelection(courses: Course[]) {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [prerequisiteIds, setPrerequisiteIds] = useState<Set<string>>(new Set());
   const [unlockableIds, setUnlockableIds] = useState<Set<string>>(new Set());
 
-  // Select a course and highlight it along with its prerequisites and unlockable courses
-  // If the course is already selected, it will be deselected (toggle behavior)
+  /**
+   * Select a course and highlight its prerequisites and unlockable courses
+   * Toggles selection if the course is already selected
+   */
   const selectCourseWithPrerequisites = useCallback((courseId: string) => {
     // Toggle: if already selected, clear selection
     if (selectedCourseId === courseId) {
@@ -38,33 +44,43 @@ export function useCourseSelection(courses: Course[]) {
     
     // Calculate which courses become unlockable when this course is selected
     // (courses that have this course as a prerequisite)
-    const selectedSet = new Set([courseId]);
     const unlockable = findDependentCourses(courses, courseId).map(c => c.id);
     setUnlockableIds(new Set(unlockable));
   }, [courses, selectedCourseId]);
 
+  /**
+   * Clear all selection state
+   */
   const clearSelection = useCallback(() => {
     setSelectedCourseId(null);
     setPrerequisiteIds(new Set());
     setUnlockableIds(new Set());
   }, []);
 
-  // Helper to check if a course is selected
+  /**
+   * Check if a course is currently selected
+   */
   const isSelected = useCallback((courseId: string) => {
     return selectedCourseId === courseId;
   }, [selectedCourseId]);
 
-  // Helper to check if a course is a prerequisite of the selected course
+  /**
+   * Check if a course is a prerequisite of the selected course
+   */
   const isPrerequisite = useCallback((courseId: string) => {
     return prerequisiteIds.has(courseId);
   }, [prerequisiteIds]);
 
-  // Helper to check if a course is unlockable (can be taken after selected course)
+  /**
+   * Check if a course is unlockable (can be taken after selected course)
+   */
   const isUnlockable = useCallback((courseId: string) => {
     return unlockableIds.has(courseId);
   }, [unlockableIds]);
 
-  // Helper to check if a course should be faded (not selected, not prerequisite, not unlockable)
+  /**
+   * Check if a course should be faded (not selected, not prerequisite, not unlockable)
+   */
   const shouldFade = useCallback((courseId: string) => {
     if (!selectedCourseId) return false;
     return courseId !== selectedCourseId && 
@@ -84,4 +100,3 @@ export function useCourseSelection(courses: Course[]) {
     shouldFade,
   };
 }
-

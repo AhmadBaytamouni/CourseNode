@@ -1,7 +1,12 @@
 import { Course, CourseNode, CourseEdge } from './types';
-import { getCourseLevelColor } from './courseData';
+import { getYearLevel } from '@/utils/year';
+import { COURSE_NODE, EDGE_STYLES } from '@/constants/dimensions';
+import { UI_COLORS } from '@/constants/colors';
 
-// Calculate which courses are unlockable based on selected courses
+/**
+ * Calculate which courses become unlockable when given courses are selected
+ * A course is unlockable if all its prerequisites are met
+ */
 export function calculateUnlockableCourses(
   courses: Course[],
   selectedCourseIds: Set<string>
@@ -29,14 +34,6 @@ export function calculateUnlockableCourses(
   return unlockable;
 }
 
-// Get year level (1-4) from course level (1000-4000)
-function getYearLevel(level: number): number {
-  if (level >= 4000) return 4;
-  if (level >= 3000) return 3;
-  if (level >= 2000) return 2;
-  return 1;
-}
-
 // Build a map of course dependencies (reverse prerequisites)
 function buildDependencyMap(courses: Course[]): Map<string, Set<string>> {
   const dependencyMap = new Map<string, Set<string>>();
@@ -59,7 +56,10 @@ function buildDependencyMap(courses: Course[]): Map<string, Set<string>> {
   return dependencyMap;
 }
 
-// Calculate tree layout positions (horizontal layout: years as rows, courses as columns)
+/**
+ * Build course nodes with calculated positions for tree layout
+ * Organizes courses by year level with horizontal spacing within years
+ */
 export function buildCourseNodes(
   courses: Course[],
   selectedCourseIds: Set<string>,
@@ -67,12 +67,12 @@ export function buildCourseNodes(
   unlockableIds: Set<string> = new Set(),
   shouldFade: (courseId: string) => boolean = () => false
 ): CourseNode[] {
-  const nodeWidth = 280;
-  const nodeHeight = 180;
-  const horizontalSpacing = 300; // Space between courses in same year (horizontal)
-  const verticalSpacing = 250; // Space between year rows (vertical)
-  const yearStartX = 100; // Starting X position
-  const yearStartY = 150; // Starting Y position
+  const {
+    HORIZONTAL_SPACING,
+    VERTICAL_SPACING,
+    START_X: yearStartX,
+    START_Y: yearStartY,
+  } = COURSE_NODE;
 
   // Group courses by year level
   const coursesByYear = new Map<number, Course[]>();
@@ -96,7 +96,7 @@ export function buildCourseNodes(
   // Position courses year by year (top to bottom: first year to fourth year)
   years.forEach((year) => {
     const yearCourses = coursesByYear.get(year)!;
-    const y = yearStartY + (year - 1) * verticalSpacing;
+    const y = yearStartY + (year - 1) * VERTICAL_SPACING;
     
     // Sort courses within year to try to group related courses together
     // Sort by department first, then by code
@@ -138,7 +138,7 @@ export function buildCourseNodes(
     
     // Track X positions used in this year
     const usedXPositions = new Set<number>();
-    let currentX = yearStartX;
+    let currentX: number = yearStartX;
     
     yearCourses.forEach((course) => {
       // Check if any prerequisite courses from previous year have been positioned
@@ -162,33 +162,30 @@ export function buildCourseNodes(
       }
       
       // Find a good X position
-      let finalX = currentX;
+      let adjustedX: number = currentX;
       
       if (preferredX !== null) {
         // Try to use preferred X, or find nearest available spot
-        finalX = preferredX;
+        adjustedX = preferredX;
         let offset = 0;
         let direction = 1;
         
-        while (usedXPositions.has(Math.round(finalX / horizontalSpacing) * horizontalSpacing)) {
-          finalX = preferredX + offset * direction * (horizontalSpacing * 0.5);
+        while (usedXPositions.has(Math.round(adjustedX / HORIZONTAL_SPACING) * HORIZONTAL_SPACING)) {
+          adjustedX = preferredX + offset * direction * (HORIZONTAL_SPACING * 0.5);
           direction *= -1;
           if (direction > 0) offset++;
           if (offset > 50) break; // Safety limit
         }
         
         // Snap to grid
-        finalX = Math.round(finalX / (horizontalSpacing * 0.5)) * (horizontalSpacing * 0.5);
+        adjustedX = Math.round(adjustedX / (HORIZONTAL_SPACING * 0.5)) * (HORIZONTAL_SPACING * 0.5);
       }
       
       // Ensure minimum spacing from other courses
-      const snappedX = Math.round(finalX / (horizontalSpacing * 0.5)) * (horizontalSpacing * 0.5);
-      let adjustedX = snappedX;
       let attempts = 0;
-      
       while (usedXPositions.has(Math.round(adjustedX)) && attempts < 100) {
         adjustedX = currentX;
-        currentX += horizontalSpacing;
+        currentX += HORIZONTAL_SPACING;
         attempts++;
       }
       
@@ -198,7 +195,7 @@ export function buildCourseNodes(
       
       usedXPositions.add(Math.round(adjustedX));
       positions.set(course.id, { x: adjustedX, y });
-      currentX = Math.max(currentX, adjustedX + horizontalSpacing);
+      currentX = Math.max(currentX, adjustedX + HORIZONTAL_SPACING);
     });
   });
 
@@ -225,7 +222,10 @@ export function buildCourseNodes(
   });
 }
 
-// Build graph edges from prerequisites
+/**
+ * Build graph edges from course prerequisites
+ * Applies different styles based on selection state (selected, prerequisite, unlockable)
+ */
 export function buildCourseEdges(
   courses: Course[],
   selectedCourseIds: Set<string> = new Set(),
@@ -241,38 +241,48 @@ export function buildCourseEdges(
                                    selectedCourseIds.has(course.id);
         const isSelectedCourseEdge = selectedCourseIds.has(course.id) || 
                                      selectedCourseIds.has(prereq.prerequisite_id);
+        const isUnlockableEdge = selectedCourseIds.has(prereq.prerequisite_id) && 
+                                 unlockableIds.has(course.id);
         
-        let strokeColor = prereq.is_corequisite ? '#f59e0b' : '#60a5fa';
-        let strokeWidth = 2;
-        let opacity = 0.15;
-        let animated = false;
+        // Default edge styling
+        let strokeColor: string = prereq.is_corequisite 
+          ? UI_COLORS.EDGE.COREREQUISITE 
+          : UI_COLORS.EDGE.DEFAULT;
+        let strokeWidth: number = EDGE_STYLES.DEFAULT.STROKE_WIDTH;
+        let opacity: number = EDGE_STYLES.DEFAULT.OPACITY;
+        let animated: boolean = EDGE_STYLES.DEFAULT.ANIMATED;
 
-        const isUnlockableEdge = selectedCourseIds.has(prereq.prerequisite_id) && unlockableIds.has(course.id);
-
+        // Apply highlighted styling based on edge type
         if (isPrerequisiteEdge) {
           // Highlight prerequisite edges for selected course
-          strokeColor = prereq.is_corequisite ? '#fb923c' : '#6366f1';
-          strokeWidth = 4;
-          opacity = 1.0;
-          animated = true;
+          strokeColor = prereq.is_corequisite 
+            ? UI_COLORS.EDGE.COREREQUISITE_HIGHLIGHT 
+            : UI_COLORS.EDGE.PREREQUISITE;
+          strokeWidth = EDGE_STYLES.HIGHLIGHTED.STROKE_WIDTH;
+          opacity = EDGE_STYLES.HIGHLIGHTED.OPACITY;
+          animated = EDGE_STYLES.HIGHLIGHTED.ANIMATED;
         } else if (isUnlockableEdge) {
           // Highlight unlockable edges (courses that become available)
-          strokeColor = prereq.is_corequisite ? '#f59e0b' : '#10b981';
-          strokeWidth = 4;
-          opacity = 1.0;
-          animated = true;
+          strokeColor = prereq.is_corequisite 
+            ? UI_COLORS.EDGE.COREREQUISITE 
+            : UI_COLORS.EDGE.UNLOCKABLE;
+          strokeWidth = EDGE_STYLES.HIGHLIGHTED.STROKE_WIDTH;
+          opacity = EDGE_STYLES.HIGHLIGHTED.OPACITY;
+          animated = EDGE_STYLES.HIGHLIGHTED.ANIMATED;
         } else if (isSelectedCourseEdge) {
           // Highlight edges connected to selected course
-          strokeColor = prereq.is_corequisite ? '#f59e0b' : '#818cf8';
-          strokeWidth = 3;
-          opacity = 0.9;
+          strokeColor = prereq.is_corequisite 
+            ? UI_COLORS.EDGE.COREREQUISITE 
+            : '#818cf8';
+          strokeWidth = EDGE_STYLES.SELECTED.STROKE_WIDTH;
+          opacity = EDGE_STYLES.SELECTED.OPACITY;
         }
 
         edges.push({
           id: `edge-${prereq.prerequisite_id}-${course.id}`,
           source: prereq.prerequisite_id,
           target: course.id,
-          type: 'default', // Use default edges for cleaner tree structure
+          type: 'default',
           animated,
           style: {
             stroke: strokeColor,
@@ -287,14 +297,19 @@ export function buildCourseEdges(
   return edges;
 }
 
-// Find all courses that require a given course
+/**
+ * Find all courses that have the given course as a prerequisite
+ */
 export function findDependentCourses(courses: Course[], courseId: string): Course[] {
   return courses.filter((course) =>
     course.prerequisites.some((prereq) => prereq.prerequisite_id === courseId)
   );
 }
 
-// Check for cycles in prerequisite graph
+/**
+ * Check for cycles in the prerequisite graph using DFS
+ * Returns true if a cycle is detected
+ */
 export function hasCycle(courses: Course[]): boolean {
   const visited = new Set<string>();
   const recStack = new Set<string>();
@@ -333,4 +348,3 @@ export function hasCycle(courses: Course[]): boolean {
 
   return false;
 }
-

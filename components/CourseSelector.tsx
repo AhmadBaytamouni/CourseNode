@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import { Course } from '@/lib/types';
-import { getCourseLevelColor } from '@/lib/courseData';
+import { getCourseLevelColor } from '@/constants/colors';
+import { scrollToYear } from '@/utils/scroll';
+import { SOCIAL_LINKS, APP_INFO } from '@/constants/urls';
+import { SEARCH_BAR, CLEAR_BUTTON, BADGES, LAYOUT } from '@/constants/dimensions';
 
 interface CourseSelectorProps {
   courses: Course[];
   onClearSelection: () => void;
   onSearch: (query: string) => void;
 }
+
+/**
+ * CourseSelector component renders the top panel
+ * Includes title, search bar, level filters, and legend badges
+ */
 
 export default function CourseSelector({
   courses,
@@ -17,41 +25,52 @@ export default function CourseSelector({
 }: CourseSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    onSearch(query);
-  };
-
-  const handleClear = () => {
-    setSearchQuery('');
-    onSearch('');
-    onClearSelection();
-  };
 
   const levels = [1000, 2000, 3000, 4000];
   const levelCounts = levels.map(
     (level) => courses.filter((c) => c.level === level).length
   );
 
+  /**
+   * Handle search input changes
+   */
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    onSearch(query);
+  };
+
+  /**
+   * Handle clear button click - clears search and selection
+   */
+  const handleClear = () => {
+    setSearchQuery('');
+    onSearch('');
+    onClearSelection();
+  };
+
   return (
     <div className="border-b border-white/10 relative overflow-hidden" style={{ background: '#12121f' }}>
-      <div className="px-8 py-4">
+      <div className="pl-8 pr-4 py-4">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent tracking-tight">
-              Carleton Computer Science Course Map
+              {APP_INFO.TITLE}
             </h1>
             <p className="text-sm text-gray-400">
-              Explore course prerequisites and build your academic path
+              {APP_INFO.SUBTITLE}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center" style={{ gap: `${BADGES.GAP}px` }}>
             <a
-              href="https://www.linkedin.com/in/ahmad-baytamouni-ab39b4298/"
+              href={SOCIAL_LINKS.LINKEDIN}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 glass rounded-lg text-blue-400 hover:text-blue-300 hover:bg-white/10 transition-all duration-200 hover:scale-110 border border-white/10"
+              className="glass rounded-lg text-blue-400 hover:text-blue-300 hover:bg-white/10 transition-all duration-200 hover:scale-110 border border-white/10 flex items-center justify-center"
+              style={{
+                width: `${SEARCH_BAR.HEIGHT}px`,
+                height: `${SEARCH_BAR.HEIGHT}px`,
+              }}
               aria-label="LinkedIn"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -59,10 +78,14 @@ export default function CourseSelector({
               </svg>
             </a>
             <a
-              href="https://github.com"
+              href={SOCIAL_LINKS.GITHUB}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 glass rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 hover:scale-110 border border-white/10"
+              className="glass rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 hover:scale-110 border border-white/10 flex items-center justify-center"
+              style={{
+                width: `${SEARCH_BAR.HEIGHT}px`,
+                height: `${SEARCH_BAR.HEIGHT}px`,
+              }}
               aria-label="GitHub"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -74,7 +97,7 @@ export default function CourseSelector({
 
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="relative" style={{ width: '585px' }}>
+            <div className="relative" style={{ width: `${SEARCH_BAR.WIDTH}px` }}>
               <svg
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-blue-400 z-10"
                 fill="none"
@@ -94,36 +117,30 @@ export default function CourseSelector({
                 placeholder="Search by course code or title..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-4 py-2.5 h-[48px] border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm text-gray-100 bg-white/5 backdrop-blur-md placeholder:text-gray-500 transition-all duration-200 shadow-lg hover:bg-white/10"
+                className="w-full pl-12 pr-4 py-2.5 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm text-gray-100 bg-white/5 backdrop-blur-md placeholder:text-gray-500 transition-all duration-200 shadow-lg hover:bg-white/10"
+                style={{ height: `${SEARCH_BAR.HEIGHT}px` }}
               />
             </div>
             <button
               onClick={handleClear}
-              className="w-[125px] h-[48px] glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center justify-center"
+              className="glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center justify-center"
+              style={{ width: `${CLEAR_BUTTON.WIDTH}px`, height: `${CLEAR_BUTTON.HEIGHT}px` }}
               aria-label="Clear selection"
             >
               Clear
             </button>
           </div>
 
-          <div className="flex items-center gap-[15px] flex-wrap">
+          <div className="flex items-center flex-wrap" style={{ gap: `${BADGES.GAP}px` }}>
             {levels.map((level, idx) => (
               <button
                 key={level}
-                onClick={() => {
-                  const element = document.getElementById(`year-${level}`);
-                  if (element) {
-                    // Calculate offset to account for sticky header (top panel + some padding)
-                    const headerOffset = 170; // Approximate height of top panel
-                    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-                    const offsetPosition = elementPosition - headerOffset;
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    });
-                  }
+                onClick={() => scrollToYear(level, LAYOUT.HEADER_HEIGHT)}
+                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center justify-center gap-2 cursor-pointer"
+                style={{ 
+                  width: `${BADGES.WIDTH}px`,
+                  height: `${BADGES.HEIGHT_LARGE}px`
                 }}
-                className="px-4 py-2.5 h-[40px] glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center justify-center gap-2 cursor-pointer w-[125px]"
               >
                 <div
                   className="w-4 h-4 border rounded flex-shrink-0"
@@ -133,15 +150,33 @@ export default function CourseSelector({
                 <span className="text-gray-200">({levelCounts[idx]})</span>
               </button>
             ))}
-            <div className="px-4 py-2.5 h-[36px] w-[125px] glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center">
+            <div 
+              className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center"
+              style={{ 
+                width: `${BADGES.WIDTH}px`,
+                height: `${BADGES.HEIGHT_SMALL}px`
+              }}
+            >
               <div className="w-4 h-4 border-2 border-blue-400 bg-gradient-to-br from-blue-400/25 to-blue-500/25 rounded flex-shrink-0 ring-2 ring-blue-400/40" />
               <span className="text-gray-200 font-semibold">Selected</span>
             </div>
-            <div className="px-4 py-2.5 h-[36px] w-[125px] glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center">
+            <div 
+              className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center"
+              style={{ 
+                width: `${BADGES.WIDTH}px`,
+                height: `${BADGES.HEIGHT_SMALL}px`
+              }}
+            >
               <div className="w-4 h-4 border border-purple-400/70 bg-gradient-to-br from-purple-400/20 to-purple-500/20 rounded flex-shrink-0 ring-1 ring-purple-400/30" />
               <span className="text-gray-200 font-semibold">Prerequisites</span>
             </div>
-            <div className="px-4 py-2.5 h-[36px] w-[125px] glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center">
+            <div 
+              className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg hover:bg-white/10 transition-all duration-200 hover:scale-105 border border-white/10 flex items-center gap-2 justify-center"
+              style={{ 
+                width: `${BADGES.WIDTH}px`,
+                height: `${BADGES.HEIGHT_SMALL}px`
+              }}
+            >
               <div className="w-4 h-4 border border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 to-teal-500/15 rounded flex-shrink-0 ring-1 ring-emerald-500/20" />
               <span className="text-gray-200 font-semibold">Unlocks</span>
             </div>
@@ -151,4 +186,3 @@ export default function CourseSelector({
     </div>
   );
 }
-

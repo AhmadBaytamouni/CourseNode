@@ -1,3 +1,10 @@
+/**
+ * Type definitions for the application
+ */
+
+/**
+ * Course interface representing a university course
+ */
 export interface Course {
   id: string;
   code: string;              // e.g., "COMP 1001"
@@ -11,6 +18,9 @@ export interface Course {
   department: string;        // "COMP" for now
 }
 
+/**
+ * Prerequisite relationship between courses
+ */
 export interface Prerequisite {
   id?: string;
   course_id: string;
@@ -20,7 +30,9 @@ export interface Prerequisite {
   logic_type?: 'AND' | 'OR' | 'ONE_OF' | 'ALL_OF';
 }
 
-// Database types (from Supabase)
+/**
+ * Database types (from Supabase)
+ */
 export interface DatabaseCourse {
   id: string;
   code: string;
@@ -44,7 +56,9 @@ export interface DatabasePrerequisite {
   created_at: string;
 }
 
-// React Flow types
+/**
+ * Course node type for visualization
+ */
 export interface CourseNode {
   id: string;
   type: string;
@@ -58,6 +72,9 @@ export interface CourseNode {
   };
 }
 
+/**
+ * Course edge type for prerequisite connections
+ */
 export interface CourseEdge {
   id: string;
   source: string;
@@ -66,4 +83,3 @@ export interface CourseEdge {
   animated?: boolean;
   style?: React.CSSProperties;
 }
-

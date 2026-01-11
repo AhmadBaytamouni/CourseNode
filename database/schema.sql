@@ -1,5 +1,4 @@
 -- Carleton CS Prerequisite Visualizer Database Schema
--- Run this in your Supabase SQL Editor
 
 -- Courses table
 CREATE TABLE IF NOT EXISTS courses (
@@ -42,4 +41,3 @@ CREATE POLICY "Allow public read access on courses" ON courses
 
 CREATE POLICY "Allow public read access on prerequisites" ON prerequisites
   FOR SELECT USING (true);
-

@@ -1,6 +1,5 @@
 """
 Populate Supabase database with processed course data.
-Uses Supabase REST API directly to avoid dependency issues.
 """
 
 import json
@@ -36,6 +35,7 @@ class SupabaseClient:
         """Make a request to Supabase REST API."""
         url = f"{self.url}/rest/v1/{table}"
         
+        # Execute HTTP request based on method
         if method == 'GET':
             response = requests.get(url, headers=self.headers, params=params)
         elif method == 'POST':
@@ -47,8 +47,8 @@ class SupabaseClient:
         else:
             raise ValueError(f"Unsupported method: {method}")
         
+        # Print error details if request failed
         if not response.ok:
-            # Print detailed error information
             try:
                 error_data = response.json()
                 print(f"  Error response: {error_data}")
@@ -61,6 +61,7 @@ class SupabaseClient:
     def select(self, table: str, columns: str = '*', filters: Optional[Dict] = None) -> List[Dict]:
         """Select data from a table."""
         params = {'select': columns}
+        # Convert filters to Supabase query format (e.g., {'code': 'COMP 1001'} -> {'code': 'eq.COMP 1001'})
         if filters:
             for key, value in filters.items():
                 params[key] = f'eq.{value}'
@@ -103,15 +104,14 @@ def load_env_file(filepath: str) -> Dict[str, str]:
 
 def get_supabase_client() -> SupabaseClient:
     """Create and return Supabase client."""
-    # Try to load from .env or .env.local file in project root or scripts directory
+    # Load environment variables from .env files (check multiple locations)
     env_vars = {}
     for env_file in ['../.env.local', '../.env', '.env.local', '.env', '../../.env.local', '../../.env']:
         if os.path.exists(env_file):
             env_vars.update(load_env_file(env_file))
-            # Don't break - keep checking to allow multiple files to override
     
-    # Load from environment variables (these take precedence over .env file)
-    # Also check for NEXT_PUBLIC_ prefixed versions (used by Next.js)
+    # Try to get URL and key from environment variables (precedence) or .env files
+    # Supports both standard and NEXT_PUBLIC_ prefixed variables
     url = (os.getenv('SUPABASE_URL') or 
            os.getenv('NEXT_PUBLIC_SUPABASE_URL') or
            env_vars.get('SUPABASE_URL') or 
@@ -145,11 +145,11 @@ def insert_courses(supabase: SupabaseClient, courses: List[Dict]) -> Dict[str, s
     
     for course in courses:
         try:
-            # Check if course already exists
+            # Check if course already exists in database
             existing = supabase.select('courses', columns='id,code', filters={'code': course['code']})
             
             if existing:
-                # Update existing course
+                # Update existing course with new data
                 course_id = existing[0]['id']
                 update_data = {
                     'title': course['title'],
@@ -193,22 +193,22 @@ def insert_prerequisites(
         if not course_id:
             continue
         
-        # Delete existing prerequisites for this course
+        # Delete existing prerequisites to avoid duplicates
         try:
             supabase.delete('prerequisites', filters={'course_id': course_id})
         except Exception as e:
             print(f"Warning: Could not delete existing prerequisites for {course['code']}: {e}")
         
-        # Insert new prerequisites in order
+        # Insert prerequisites in order (preserves original sequence)
         prerequisites_list = course.get('prerequisites', [])
         for order_index, prereq in enumerate(prerequisites_list):
-            # Handle both old format (string) and new format (dict)
+            # Handle both dict format (new) and string format (old)
             if isinstance(prereq, dict):
                 prereq_code = prereq.get('code')
                 logic_type = prereq.get('logic_type', 'AND')
             else:
                 prereq_code = prereq
-                logic_type = 'AND'  # Default to AND for old format
+                logic_type = 'AND'  # Default for old format
             
             prereq_id = code_to_id.get(prereq_code)
             if prereq_id:
@@ -219,7 +219,7 @@ def insert_prerequisites(
                         'is_corequisite': False,
                         'is_exclusion': False,
                         'logic_type': logic_type,
-                        'order_index': order_index,  # Add order field to preserve sequence
+                        'order_index': order_index,  # Preserves original order from text
                     })
                 except Exception as e:
                     print(f"Error inserting prerequisite {prereq_code} for {course['code']}: {e}")
@@ -228,19 +228,15 @@ def main():
     """Main function to populate database."""
     print("Starting database population...")
     
-    # Load processed courses
     courses = load_processed_courses()
     print(f"Loaded {len(courses)} courses")
     
-    # Create Supabase client
     supabase = get_supabase_client()
     
-    # Insert courses
     print("\nInserting courses...")
     code_to_id = insert_courses(supabase, courses)
     print(f"Inserted/updated {len(code_to_id)} courses")
     
-    # Insert prerequisites
     print("\nInserting prerequisites...")
     insert_prerequisites(supabase, courses, code_to_id)
     print("Prerequisites inserted")
@@ -249,4 +245,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -5,14 +5,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  console.warn(
+    'Supabase environment variables are not set. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Fetch all courses
-export async function fetchCourses() {
-  // Add headers to prevent caching
+/**
+ * Fetch all courses from the database, ordered by course code
+ */
+export async function fetchCourses(): Promise<DatabaseCourse[]> {
   const { data, error } = await supabase
     .from('courses')
     .select('*')
@@ -26,13 +29,16 @@ export async function fetchCourses() {
   return data as DatabaseCourse[];
 }
 
-// Fetch all prerequisites
-export async function fetchPrerequisites() {
+/**
+ * Fetch all prerequisites from the database, ordered by course_id and order_index
+ * to preserve the original sequence of prerequisites per course
+ */
+export async function fetchPrerequisites(): Promise<DatabasePrerequisite[]> {
   const { data, error } = await supabase
     .from('prerequisites')
     .select('*')
     .order('course_id', { ascending: true })
-    .order('order_index', { ascending: true, nullsFirst: false }); // Order by course_id then order_index to preserve sequence per course
+    .order('order_index', { ascending: true, nullsFirst: false });
 
   if (error) {
     console.error('Error fetching prerequisites:', error);
@@ -42,7 +48,9 @@ export async function fetchPrerequisites() {
   return data as DatabasePrerequisite[];
 }
 
-// Fetch course with prerequisites
+/**
+ * Fetch a single course with its prerequisites by course code
+ */
 export async function fetchCourseWithPrerequisites(courseCode: string) {
   const { data: course, error: courseError } = await supabase
     .from('courses')
@@ -59,7 +67,7 @@ export async function fetchCourseWithPrerequisites(courseCode: string) {
     .from('prerequisites')
     .select('*')
     .eq('course_id', course.id)
-    .order('order_index', { ascending: true, nullsFirst: false }); // Order by order_index to preserve sequence
+    .order('order_index', { ascending: true, nullsFirst: false });
 
   if (prereqError) {
     console.error('Error fetching prerequisites:', prereqError);
@@ -71,4 +79,3 @@ export async function fetchCourseWithPrerequisites(courseCode: string) {
     prerequisites: prerequisites as DatabasePrerequisite[],
   };
 }
-

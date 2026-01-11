@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { APP_INFO } from '@/constants/urls';
 
 export const metadata: Metadata = {
-  title: 'Carleton CS Prerequisite Visualizer',
-  description: 'Interactive visualization of Carleton University Computer Science course prerequisites',
+  title: APP_INFO.TITLE,
+  description: APP_INFO.DESCRIPTION,
 };
 
+/**
+ * Root layout component
+ */
 export default function RootLayout({
   children,
 }: {
@@ -17,4 +21,3 @@ export default function RootLayout({
     </html>
   );
 }
-

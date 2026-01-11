@@ -11,6 +11,11 @@ interface CourseDetailsProps {
   onCourseClick: (courseCode: string) => void;
 }
 
+/**
+ * CourseDetails component displays detailed information about a selected course
+ * Shows description, prerequisites (with AND/OR logic), and unlockable courses
+ */
+
 export default function CourseDetails({
   course,
   allCourses,
@@ -45,6 +50,7 @@ export default function CourseDetails({
     );
   }
 
+  // Find all courses that have this course as a prerequisite (unlockable courses)
   const dependentCourses = findDependentCourses(allCourses, course.id);
 
   return (
@@ -98,12 +104,11 @@ export default function CourseDetails({
         )}
 
         {course.prerequisites.length > 0 && (() => {
-          // Keep prerequisites in original order (don't split by logic type)
-          // Group prerequisites by logic type for cleaner display, but preserve original order within groups
+          // Group prerequisites by logic type (OR vs AND) for cleaner display
+          // Preserves original order within each group
           const orPrereqs: typeof course.prerequisites = [];
           const andPrereqs: typeof course.prerequisites = [];
           
-          // Split into groups while preserving order
           course.prerequisites.forEach(prereq => {
             if (prereq.logic_type === 'OR') {
               orPrereqs.push(prereq);
@@ -266,4 +271,3 @@ export default function CourseDetails({
     </div>
   );
 }
-

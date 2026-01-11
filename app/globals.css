@@ -22,8 +22,6 @@ body {
   background: #12121f;
 }
 
-
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -137,9 +135,7 @@ body {
   background: #b0b0b0;
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: #9a9a9a #2f2f2f;
 }
-

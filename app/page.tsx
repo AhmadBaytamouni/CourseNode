@@ -8,8 +8,14 @@ import { useCourseGraph } from '@/hooks/useCourseGraph';
 import CourseGraph from '@/components/CourseGraph';
 import CourseDetails from '@/components/CourseDetails';
 import CourseSelector from '@/components/CourseSelector';
-import Legend from '@/components/Legend';
+import { LAYOUT } from '@/constants/dimensions';
+import { UI_COLORS } from '@/constants/colors';
 
+/**
+ * Main application page
+ * Manages course data, selection state, and search filtering
+ * Renders the course graph and details panel
+ */
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +35,7 @@ export default function Home() {
     shouldFade,
   } = useCourseSelection(courses);
 
-  const { nodes, edges, onNodesChange } = useCourseGraph(
+  const { nodes, edges } = useCourseGraph(
     courses,
     selectedCourseId,
     prerequisiteIds,
@@ -37,7 +43,9 @@ export default function Home() {
     shouldFade
   );
 
-  // Filter courses based on search
+  /**
+   * Filter courses based on search query (matches code or title)
+   */
   const filteredCourses = useMemo(() => {
     if (!searchQuery) return courses;
     const query = searchQuery.toLowerCase();
@@ -48,13 +56,18 @@ export default function Home() {
     );
   }, [courses, searchQuery]);
 
-  // Filter nodes and edges based on search
+  /**
+   * Filter nodes to only show courses matching the search query
+   */
   const filteredNodes = useMemo(() => {
     if (!searchQuery) return nodes;
     const filteredIds = new Set(filteredCourses.map((c) => c.id));
     return nodes.filter((n) => filteredIds.has(n.id));
   }, [nodes, filteredCourses, searchQuery]);
 
+  /**
+   * Filter edges to only show connections between visible courses
+   */
   const filteredEdges = useMemo(() => {
     if (!searchQuery) return edges;
     const filteredIds = new Set(filteredCourses.map((c) => c.id));
@@ -63,6 +76,9 @@ export default function Home() {
     );
   }, [edges, filteredCourses, searchQuery]);
 
+  /**
+   * Load courses from the database on component mount
+   */
   useEffect(() => {
     async function loadCourses() {
       try {
@@ -80,40 +96,28 @@ export default function Home() {
     loadCourses();
   }, []);
 
+  /**
+   * Handle clicking on a course node in the graph
+   */
   const handleNodeClick = (nodeId: string) => {
     const course = courses.find((c) => c.id === nodeId);
     if (!course) return;
 
-    // Check if we're toggling off (course is currently selected)
     const wasSelected = selectedCourseId === nodeId;
-    
-    // Toggle selection (this will select or deselect based on current state)
     selectCourseWithPrerequisites(nodeId);
-    
-    // Update selectedCourse state based on whether we selected or deselected
-    if (wasSelected) {
-      setSelectedCourse(null);
-    } else {
-      setSelectedCourse(course);
-    }
+    setSelectedCourse(wasSelected ? null : course);
   };
 
+  /**
+   * Handle clicking on a course in the details panel
+   */
   const handleCourseClick = (courseCode: string) => {
     const course = getCourseByCode(courses, courseCode);
     if (!course) return;
 
-    // Check if we're toggling off (course is currently selected)
     const wasSelected = selectedCourseId === course.id;
-    
-    // Toggle selection (this will select or deselect based on current state)
     selectCourseWithPrerequisites(course.id);
-    
-    // Update selectedCourse state based on whether we selected or deselected
-    if (wasSelected) {
-      setSelectedCourse(null);
-    } else {
-      setSelectedCourse(course);
-    }
+    setSelectedCourse(wasSelected ? null : course);
   };
 
   if (loading) {
@@ -155,7 +159,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-y-auto overflow-x-hidden" style={{ background: '#12121f' }}>
+    <div 
+      className="min-h-screen flex flex-col overflow-y-auto overflow-x-hidden" 
+      style={{ background: UI_COLORS.BACKGROUND }}
+    >
       <div className="fixed top-0 left-0 right-0 z-30 flex-shrink-0">
         <CourseSelector
           courses={courses}
@@ -167,17 +174,30 @@ export default function Home() {
         />
       </div>
 
-      <div className="flex-1 flex relative min-h-screen" style={{ paddingTop: '170px' }}>
-        <div className="flex-1 relative min-w-0" style={{ marginRight: '450px' }}>
+      <div 
+        className="flex-1 flex relative min-h-screen" 
+        style={{ paddingTop: `${LAYOUT.HEADER_HEIGHT}px` }}
+      >
+        <div 
+          className="flex-1 relative min-w-0" 
+          style={{ marginRight: `${LAYOUT.COURSE_DETAILS_WIDTH}px` }}
+        >
           <CourseGraph
             nodes={filteredNodes}
             edges={filteredEdges}
             onNodeClick={handleNodeClick}
-            onNodesChange={onNodesChange}
           />
         </div>
 
-        <div className="hidden lg:block flex-shrink-0 fixed z-20" style={{ top: '150px', height: 'calc(100vh - 150px)', width: '450px', right: '0' }}>
+        <div 
+          className="hidden lg:block flex-shrink-0 fixed z-20" 
+          style={{ 
+            top: `${LAYOUT.COURSE_DETAILS_TOP}px`, 
+            height: `calc(100vh - ${LAYOUT.COURSE_DETAILS_TOP}px)`, 
+            width: `${LAYOUT.COURSE_DETAILS_WIDTH}px`, 
+            right: '0' 
+          }}
+        >
           <CourseDetails
             course={selectedCourse}
             allCourses={courses}
@@ -266,4 +286,3 @@ export default function Home() {
     </div>
   );
 }
-

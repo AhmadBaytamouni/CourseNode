@@ -2,23 +2,20 @@
 
 import { useMemo, useRef, useEffect, useState } from 'react';
 import CourseNode from './CourseNode';
-import YearLabels from './YearLabels';
 import { CourseNode as CourseNodeType, CourseEdge } from '@/lib/types';
-
-// Get year level (1-4) from course level (1000-4000)
-function getYearLevel(level: number): number {
-  if (level >= 4000) return 4;
-  if (level >= 3000) return 3;
-  if (level >= 2000) return 2;
-  return 1;
-}
+import { getYearLevel, getYearLabel } from '@/utils/year';
+import { BADGES, LAYOUT } from '@/constants/dimensions';
 
 interface CourseGraphProps {
   nodes: CourseNodeType[];
   edges: CourseEdge[];
   onNodeClick?: (nodeId: string) => void;
-  onNodesChange?: (changes: any) => void;
 }
+
+/**
+ * CourseGraph component renders the visual course map
+ * Displays course nodes organized by year level with prerequisite connections
+ */
 
 export default function CourseGraph({
   nodes,
@@ -29,7 +26,9 @@ export default function CourseGraph({
   const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number; width: number; height: number }>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Group nodes by year
+  /**
+   * Group nodes by year level and sort them
+   */
   const nodesByYear = useMemo(() => {
     const grouped = new Map<number, CourseNodeType[]>();
     nodes.forEach(node => {
@@ -54,7 +53,10 @@ export default function CourseGraph({
     return sorted;
   }, [nodes]);
 
-  // Update positions after render
+  /**
+   * Update node positions for edge drawing
+   * Recalculates positions on scroll and resize
+   */
   useEffect(() => {
     const updatePositions = () => {
       if (!containerRef.current) return;
@@ -78,13 +80,8 @@ export default function CourseGraph({
     
     updatePositions();
     
-    const handleScroll = () => {
-      updatePositions();
-    };
-    
-    const handleResize = () => {
-      updatePositions();
-    };
+    const handleScroll = () => updatePositions();
+    const handleResize = () => updatePositions();
     
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleResize);
@@ -97,7 +94,9 @@ export default function CourseGraph({
     };
   }, [nodes]);
 
-  // Get edge path for drawing lines
+  /**
+   * Calculate SVG path for drawing an edge between two nodes
+   */
   const getEdgePath = (edge: CourseEdge) => {
     const sourcePos = nodePositions.get(edge.source);
     const targetPos = nodePositions.get(edge.target);
@@ -165,18 +164,24 @@ export default function CourseGraph({
         </svg>
       )}
 
-      {/* Year Labels - Sticky */}
-      <YearLabels />
-
       {/* Main content container */}
       <div className="relative px-8 pb-6 pt-2">
         {nodesByYear.map(([year, yearNodes]) => (
           <div key={year} className="mb-4">
             {/* Year header */}
-            <div id={`year-${year * 1000}`} className="sticky top-2 z-10 mb-3 scroll-mt-[140px]">
-              <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg border border-white/10 inline-block w-[125px] h-[48px] flex flex-col justify-center">
+            <div 
+              id={`year-${year * 1000}`} 
+              className="sticky top-2 z-10 mb-3 scroll-mt-[140px]"
+            >
+              <div 
+                className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg border border-white/10 inline-block flex flex-col justify-center"
+                style={{ 
+                  width: `${BADGES.WIDTH}px`, 
+                  height: `${BADGES.HEIGHT_LARGE}px` 
+                }}
+              >
                 <div className="text-blue-400 font-bold uppercase tracking-wider text-center leading-tight text-xs">
-                  {year === 1 ? 'First Year' : year === 2 ? 'Second Year' : year === 3 ? 'Third Year' : 'Fourth Year'}
+                  {getYearLabel(year)}
                 </div>
                 <div className="text-gray-400 text-center leading-tight text-[11px]">
                   {(year * 1000)}-level
