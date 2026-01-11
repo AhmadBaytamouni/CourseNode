@@ -40,6 +40,7 @@ export interface DatabasePrerequisite {
   is_corequisite: boolean;
   is_exclusion: boolean;
   logic_type: string | null;
+  order_index: number | null;
   created_at: string;
 }
 

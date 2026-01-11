@@ -199,9 +199,9 @@ def insert_prerequisites(
         except Exception as e:
             print(f"Warning: Could not delete existing prerequisites for {course['code']}: {e}")
         
-        # Insert new prerequisites
+        # Insert new prerequisites in order
         prerequisites_list = course.get('prerequisites', [])
-        for prereq in prerequisites_list:
+        for order_index, prereq in enumerate(prerequisites_list):
             # Handle both old format (string) and new format (dict)
             if isinstance(prereq, dict):
                 prereq_code = prereq.get('code')
@@ -219,6 +219,7 @@ def insert_prerequisites(
                         'is_corequisite': False,
                         'is_exclusion': False,
                         'logic_type': logic_type,
+                        'order_index': order_index,  # Add order field to preserve sequence
                     })
                 except Exception as e:
                     print(f"Error inserting prerequisite {prereq_code} for {course['code']}: {e}")

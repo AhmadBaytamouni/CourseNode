@@ -67,9 +67,9 @@ export function buildCourseNodes(
   unlockableIds: Set<string> = new Set(),
   shouldFade: (courseId: string) => boolean = () => false
 ): CourseNode[] {
-  const nodeWidth = 300;
-  const nodeHeight = 200;
-  const horizontalSpacing = 320; // Space between courses in same year (horizontal)
+  const nodeWidth = 280;
+  const nodeHeight = 180;
+  const horizontalSpacing = 300; // Space between courses in same year (horizontal)
   const verticalSpacing = 250; // Space between year rows (vertical)
   const yearStartX = 100; // Starting X position
   const yearStartY = 150; // Starting Y position
@@ -244,7 +244,7 @@ export function buildCourseEdges(
         
         let strokeColor = prereq.is_corequisite ? '#f59e0b' : '#60a5fa';
         let strokeWidth = 2;
-        let opacity = 0.5;
+        let opacity = 0.15;
         let animated = false;
 
         const isUnlockableEdge = selectedCourseIds.has(prereq.prerequisite_id) && unlockableIds.has(course.id);
@@ -252,20 +252,20 @@ export function buildCourseEdges(
         if (isPrerequisiteEdge) {
           // Highlight prerequisite edges for selected course
           strokeColor = prereq.is_corequisite ? '#fb923c' : '#6366f1';
-          strokeWidth = 3;
-          opacity = 0.9;
+          strokeWidth = 4;
+          opacity = 1.0;
           animated = true;
         } else if (isUnlockableEdge) {
           // Highlight unlockable edges (courses that become available)
           strokeColor = prereq.is_corequisite ? '#f59e0b' : '#10b981';
-          strokeWidth = 3;
-          opacity = 0.9;
+          strokeWidth = 4;
+          opacity = 1.0;
           animated = true;
         } else if (isSelectedCourseEdge) {
           // Highlight edges connected to selected course
           strokeColor = prereq.is_corequisite ? '#f59e0b' : '#818cf8';
-          strokeWidth = 2;
-          opacity = 0.8;
+          strokeWidth = 3;
+          opacity = 0.9;
         }
 
         edges.push({

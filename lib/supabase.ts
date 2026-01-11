@@ -30,7 +30,9 @@ export async function fetchCourses() {
 export async function fetchPrerequisites() {
   const { data, error } = await supabase
     .from('prerequisites')
-    .select('*');
+    .select('*')
+    .order('course_id', { ascending: true })
+    .order('order_index', { ascending: true, nullsFirst: false }); // Order by course_id then order_index to preserve sequence per course
 
   if (error) {
     console.error('Error fetching prerequisites:', error);
@@ -56,7 +58,8 @@ export async function fetchCourseWithPrerequisites(courseCode: string) {
   const { data: prerequisites, error: prereqError } = await supabase
     .from('prerequisites')
     .select('*')
-    .eq('course_id', course.id);
+    .eq('course_id', course.id)
+    .order('order_index', { ascending: true, nullsFirst: false }); // Order by order_index to preserve sequence
 
   if (prereqError) {
     console.error('Error fetching prerequisites:', prereqError);

@@ -142,15 +142,20 @@ export default function CourseGraph({
             const path = getEdgePath(edge);
             if (!path) return null;
             
+            const strokeWidth = edge.style?.strokeWidth || 2;
+            const stroke = edge.style?.stroke || '#60a5fa';
+            const opacity = edge.style?.opacity || 0.5;
+            
             return (
               <path
                 key={edge.id}
                 d={path}
                 fill="none"
-                stroke={edge.style?.stroke || '#60a5fa'}
-                strokeWidth={edge.style?.strokeWidth || 2}
-                opacity={edge.style?.opacity || 0.5}
+                stroke={stroke}
+                strokeWidth={strokeWidth}
+                opacity={opacity}
                 strokeDasharray={edge.animated ? '5,5' : 'none'}
+                strokeLinecap="round"
                 style={edge.animated ? {
                   animation: 'dash 1s linear infinite',
                 } : {}}
@@ -164,23 +169,23 @@ export default function CourseGraph({
       <YearLabels />
 
       {/* Main content container */}
-      <div className="relative px-8 pb-6 pt-4">
+      <div className="relative px-8 pb-6 pt-2">
         {nodesByYear.map(([year, yearNodes]) => (
-          <div key={year} className="mb-8">
+          <div key={year} className="mb-4">
             {/* Year header */}
-            <div id={`year-${year * 1000}`} className="sticky top-2 z-10 mb-4 scroll-mt-[180px]">
-              <div className="glass-strong rounded-lg px-4 py-2 border border-white/20 shadow-lg inline-block bg-[#0a0a0f]/95 backdrop-blur-md">
-                <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+            <div id={`year-${year * 1000}`} className="sticky top-2 z-10 mb-3 scroll-mt-[140px]">
+              <div className="px-4 py-2.5 glass rounded-xl text-xs font-semibold text-gray-300 shadow-lg border border-white/10 inline-block w-[125px] h-[48px] flex flex-col justify-center">
+                <div className="text-blue-400 font-bold uppercase tracking-wider text-center leading-tight text-xs">
                   {year === 1 ? 'First Year' : year === 2 ? 'Second Year' : year === 3 ? 'Third Year' : 'Fourth Year'}
                 </div>
-                <div className="text-xs text-gray-400 mt-0.5 text-center">
+                <div className="text-gray-400 text-center leading-tight text-[11px]">
                   {(year * 1000)}-level
                 </div>
               </div>
             </div>
             
             {/* Courses in this year - flexbox with wrapping */}
-            <div className="flex flex-wrap gap-4 relative z-20">
+            <div className="flex flex-wrap gap-3 relative z-20">
               {yearNodes.map(node => (
                 <div
                   key={node.id}

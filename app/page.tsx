@@ -155,7 +155,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-y-auto overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-y-auto overflow-x-hidden" style={{ background: '#12121f' }}>
       <div className="fixed top-0 left-0 right-0 z-30 flex-shrink-0">
         <CourseSelector
           courses={courses}

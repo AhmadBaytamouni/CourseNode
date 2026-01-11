@@ -44,14 +44,24 @@ def parse_prerequisites(text: str) -> List[Dict]:
     if not prereq_text:
         return []
     
-    # Clean up the prerequisite text - remove "with a minimum grade" clauses but keep the rest
-    # Match "with a minimum grade of X" or "with a minimum grade X" but stop before "and" or the end
-    prereq_text = re.sub(r'\s+with\s+a\s+minimum\s+grade\s+(?:of\s+)?[^and]+\s*(?=and|$)', '', prereq_text, flags=re.IGNORECASE)
-    # Remove trailing periods and commas
-    prereq_text = re.sub(r'[.,]+$', '', prereq_text)
+    # Clean up the prerequisite text - remove "with a minimum grade" clauses
+    # Better pattern: match "with a minimum grade of X" or "with a minimum grade X" up to comma, and, or end
+    prereq_text = re.sub(r'\s+with\s+a\s+minimum\s+grade\s+(?:of\s+)?[^,and)]+(?=\s*[,and)]|$)', '', prereq_text, flags=re.IGNORECASE)
+    # Remove trailing periods
+    prereq_text = re.sub(r'\.+$', '', prereq_text)
     prereq_text = prereq_text.strip()
     
     prerequisites = []
+    
+    # Ignore SYSC courses - filter them out from the text for parsing
+    # Replace SYSC codes with placeholders so they don't interfere with parsing
+    sysc_pattern = r'SYSC\s*\d{4}'
+    prereq_text = re.sub(sysc_pattern, '', prereq_text, flags=re.IGNORECASE)
+    # Clean up extra spaces and commas left after removing SYSC codes
+    prereq_text = re.sub(r'\s*,\s*,', ',', prereq_text)  # Remove double commas
+    prereq_text = re.sub(r'\s*,\s*\)', ')', prereq_text)  # Clean commas before closing parens
+    prereq_text = re.sub(r'\(\s*,', '(', prereq_text)  # Clean commas after opening parens
+    prereq_text = re.sub(r'\s+', ' ', prereq_text)  # Normalize spaces
     
     # Check if the text contains "or" (without parentheses) - if so, treat all as OR
     # Pattern: COMP XXXX or COMP YYYY (not in parentheses)
@@ -67,40 +77,54 @@ def parse_prerequisites(text: str) -> List[Dict]:
             })
     else:
         # Handle complex cases with parentheses and AND/OR mixing
-        # First, handle OR groups (parentheses with "or")
-        # Pattern: (COMP XXXX or COMP YYYY)
+        # Strategy: Process text character by character to preserve exact order
+        
+        # First, identify OR groups
         or_group_pattern = r'\(([^)]*(?:or|OR)[^)]*)\)'
         or_groups = list(re.finditer(or_group_pattern, prereq_text, re.IGNORECASE))
-        processed_positions = []
         
+        # Build map of OR group ranges and their multi-COMP status
+        or_group_info = {}  # Maps (start, end) to (codes_list, is_multi_comp)
         for match in or_groups:
+            start, end = match.span()
             group_text = match.group(1)
-            codes = re.findall(r'COMP\s*\d{4}', group_text, re.IGNORECASE)
-            for code in codes:
-                normalized_code = normalize_course_code(code)
-                prerequisites.append({
-                    'code': normalized_code,
-                    'logic_type': 'OR'
-                })
-            processed_positions.append((match.start(), match.end()))
+            # Extract codes from group text in order
+            codes_in_group = re.findall(r'COMP\s*\d{4}', group_text, re.IGNORECASE)
+            comp_codes_in_group = [normalize_course_code(code) for code in codes_in_group]
+            is_multi_comp = len(comp_codes_in_group) > 1
+            or_group_info[(start, end)] = (comp_codes_in_group, is_multi_comp)
         
-        # Remove processed OR groups from text to avoid double-counting
-        remaining_text = prereq_text
-        for start, end in sorted(processed_positions, reverse=True):
-            remaining_text = remaining_text[:start] + ' ' + remaining_text[end:]
+        # Extract all course codes with their positions, in order
+        all_code_matches = list(re.finditer(r'COMP\s*\d{4}', prereq_text, re.IGNORECASE))
         
-        # Extract remaining course codes (these are AND by default when not in OR groups)
-        remaining_codes = re.findall(r'COMP\s*\d{4}', remaining_text, re.IGNORECASE)
-        for code in remaining_codes:
+        # Build prerequisites list preserving exact order from text
+        seen_codes = set()
+        for match in all_code_matches:
+            code = match.group(0)
             normalized_code = normalize_course_code(code)
-            # Check if we already added this in an OR group
-            if not any(p['code'] == normalized_code for p in prerequisites):
-                prerequisites.append({
-                    'code': normalized_code,
-                    'logic_type': 'AND'
-                })
+            position = match.start()
+            
+            # Skip if already added
+            if normalized_code in seen_codes:
+                continue
+            
+            # Check if this code is in an OR group
+            is_in_multi_comp_or = False
+            for (or_start, or_end), (codes_in_group, is_multi_comp) in or_group_info.items():
+                if or_start <= position < or_end and normalized_code in codes_in_group:
+                    is_in_multi_comp_or = is_multi_comp
+                    break
+            
+            # Determine logic type
+            logic_type = 'OR' if is_in_multi_comp_or else 'AND'
+            
+            prerequisites.append({
+                'code': normalized_code,
+                'logic_type': logic_type
+            })
+            seen_codes.add(normalized_code)
     
-    # Remove duplicates while preserving order (OR takes precedence if same code appears in both)
+    # Remove duplicates while preserving order
     seen = {}
     unique_prereqs = []
     for prereq in prerequisites:

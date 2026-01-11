@@ -19,9 +19,9 @@ export default function CourseDetails({
 }: CourseDetailsProps) {
   if (!course) {
     return (
-      <div className="w-full glass-strong border-l border-white/10 p-8 hidden lg:block h-full flex flex-col overflow-y-auto">
+      <div className="w-full border-l border-white/10 p-8 hidden lg:block h-full flex flex-col overflow-y-auto" style={{ background: 'transparent' }}>
         <div className="text-center mt-12 space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shadow-lg border border-white/10">
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-blue-500/20 flex items-center justify-center shadow-lg border border-white/10">
             <svg
               className="w-10 h-10 text-blue-400"
               fill="none"
@@ -38,7 +38,7 @@ export default function CourseDetails({
           </div>
           <div>
             <p className="text-gray-200 font-bold text-lg">Select a course</p>
-            <p className="text-sm text-gray-400 mt-1">to view details and prerequisites</p>
+            <p className="text-sm text-gray-400 mt-1">to learn more</p>
           </div>
         </div>
       </div>
@@ -49,23 +49,29 @@ export default function CourseDetails({
 
   return (
     <div 
-      className="w-full glass-strong border-l border-white/10 flex flex-col" 
+      className="w-full border-l border-white/10 flex flex-col" 
       style={{ 
         height: '100%',
         maxHeight: '100%',
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        background: 'transparent',
+        position: 'relative',
+        zIndex: 20
       }}
     >
       <div 
-        className="glass-strong border-b border-white/10 p-6 z-10 bg-[#0a0a0f]/95" 
-        style={{ flexShrink: 0, flexGrow: 0 }}
+        className="border-b border-white/10 p-6 z-10" 
+        style={{ flexShrink: 0, flexGrow: 0, background: 'transparent' }}
       >
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.code}</h2>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.code}</h2>
+            <h3 className="text-[22px] font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{course.title}</h3>
+          </div>
           <p className="text-sm font-semibold text-gray-300 px-3 py-1.5 glass rounded-lg inline-block border border-white/10">
-            {formatCredits(course.credits)} • {course.level}-level
+            {course.level}-level • {formatCredits(course.credits)}
           </p>
         </div>
       </div>
@@ -81,10 +87,6 @@ export default function CourseDetails({
         }}
       >
         <div className="p-6 space-y-6 pb-8">
-        <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
-          <h3 className="text-lg font-bold text-gray-100">{course.title}</h3>
-        </div>
-
         {course.description && (
           <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
             <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -96,9 +98,19 @@ export default function CourseDetails({
         )}
 
         {course.prerequisites.length > 0 && (() => {
-          // Group prerequisites by logic type for cleaner display
-          const orPrereqs = course.prerequisites.filter(p => p.logic_type === 'OR');
-          const andPrereqs = course.prerequisites.filter(p => !p.logic_type || p.logic_type === 'AND');
+          // Keep prerequisites in original order (don't split by logic type)
+          // Group prerequisites by logic type for cleaner display, but preserve original order within groups
+          const orPrereqs: typeof course.prerequisites = [];
+          const andPrereqs: typeof course.prerequisites = [];
+          
+          // Split into groups while preserving order
+          course.prerequisites.forEach(prereq => {
+            if (prereq.logic_type === 'OR') {
+              orPrereqs.push(prereq);
+            } else {
+              andPrereqs.push(prereq);
+            }
+          });
           
           return (
             <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
@@ -161,7 +173,7 @@ export default function CourseDetails({
                     {orPrereqs.length > 0 && (
                       <div className="flex items-center gap-2 my-2">
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        <div className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-md text-xs font-bold border border-pink-500/30">
+                        <div className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-md text-xs font-bold border border-purple-500/30">
                           AND
                         </div>
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
@@ -176,7 +188,7 @@ export default function CourseDetails({
                           {idx > 0 && (
                             <div className="flex items-center gap-2 my-2">
                               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                              <div className="px-2 py-0.5 bg-pink-500/20 text-pink-400/70 rounded text-xs font-semibold border border-pink-500/30">
+                              <div className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs font-semibold border border-purple-500/30">
                                 AND
                               </div>
                               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
@@ -184,13 +196,13 @@ export default function CourseDetails({
                           )}
                           <button
                             onClick={() => onCourseClick(prereqCourse.code)}
-                            className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-pink-500/30 hover:border-pink-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-pink-500/20 transform hover:scale-[1.02]"
+                            className="w-full text-left px-4 py-3 glass hover:bg-white/10 border border-purple-500/30 hover:border-purple-400/50 rounded-xl transition-all duration-200 group shadow-lg hover:shadow-purple-500/20 transform hover:scale-[1.02]"
                           >
                             <div className="flex items-center justify-between">
-                              <div className="font-bold text-sm text-pink-300 group-hover:text-pink-200">
+                              <div className="font-bold text-sm text-purple-300 group-hover:text-purple-200">
                                 {prereqCourse.code}
                               </div>
-                              <div className="text-xs text-pink-400/80 font-semibold">
+                              <div className="text-xs text-purple-400/80 font-semibold">
                                 {formatCredits(prereqCourse.credits)}
                               </div>
                             </div>
@@ -224,7 +236,7 @@ export default function CourseDetails({
           <div className="glass rounded-xl p-4 border border-white/10 shadow-lg">
             <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
               <span className="w-1 h-4 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></span>
-              Required For ({dependentCourses.length})
+              Unlocks ({dependentCourses.length})
             </h4>
             <div className="space-y-2.5">
               {dependentCourses.map((depCourse) => (

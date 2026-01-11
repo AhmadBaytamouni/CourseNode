@@ -37,7 +37,7 @@ export default function Legend() {
           </div>
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 border border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 to-teal-500/15 rounded-lg flex-shrink-0 shadow-md ring-1 ring-emerald-500/20" />
-            <span className="text-gray-200 font-semibold">Unlockable</span>
+            <span className="text-gray-200 font-semibold">Unlocks</span>
           </div>
         </div>
       </div>
