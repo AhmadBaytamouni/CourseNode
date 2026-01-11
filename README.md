@@ -4,7 +4,7 @@ An interactive web application that visualizes Computer Science course prerequis
 
 ## 🌐 Live Website
 
-**[Visit the live website →](https://carleton-cs-course-map.vercel.app/)**
+**[Visit the live website →]https://carleton-cs-course-map.vercel.app/**
 
 ## Features
 
