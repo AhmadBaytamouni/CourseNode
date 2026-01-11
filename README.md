@@ -4,9 +4,7 @@ An interactive web application that visualizes Computer Science course prerequis
 
 ## 🌐 Live Website
 
-**[Visit the live website →](https://your-vercel-url.vercel.app)**
-
-> **Note**: Replace `https://your-vercel-url.vercel.app` with your actual Vercel deployment URL once deployed.
+**[Visit the live website →](https://carleton-cs-course-map.vercel.app/)**
 
 ## Features
 
@@ -198,33 +196,6 @@ npm run lint
 3. **Graph Visualization**: React components render courses as nodes and prerequisites as edges using SVG
 4. **Layout Algorithm**: Custom algorithm positions courses by year level and organizes them horizontally
 5. **Interactive Selection**: Clicking a course highlights its prerequisites and unlockable courses
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Push your code to GitHub
-2. Import your repository in [Vercel](https://vercel.com)
-3. Add environment variables in Vercel project settings:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy!
-
-**Automatic Deployments**: Once connected, Vercel automatically deploys on every push to your main branch. You don't need to manually redeploy - just push to GitHub and your changes will go live automatically within minutes!
-
-- Each push creates a new deployment
-- You can preview deployments before they go live
-- Vercel provides deployment status and logs in the dashboard
-- You can configure which branches trigger automatic deployments
-
-### Environment Variables for Production
-
-Make sure to set the following environment variables in your deployment platform:
-
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon/public key
-
-> **Tip**: After deployment, update the live website link at the top of this README with your actual Vercel URL.
 
 ## Future Enhancements
 
