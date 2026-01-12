@@ -8,7 +8,7 @@ export const SOCIAL_LINKS = {
 } as const;
 
 export const APP_INFO = {
-  TITLE: 'Carleton Computer Science Course Map',
+  TITLE: 'CourseNode',
   SUBTITLE: 'Explore course prerequisites and build your academic path',
   DESCRIPTION: 'Interactive visualization of Carleton University Computer Science course prerequisites',
 } as const;

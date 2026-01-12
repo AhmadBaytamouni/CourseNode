@@ -1,10 +1,10 @@
-# Carleton Computer Science Course Map Visualizer
+# CourseNode
 
 An interactive web application that visualizes Computer Science course prerequisites at Carleton University. Explore course relationships, see which courses unlock others, and plan your academic path with an intuitive graph visualization.
 
 ## 🌐 Live Website
 
-**Visit the live website:** https://carleton-cs-course-map.vercel.app
+**Visit the live website:** https://coursenode.vercel.app/
 
 ## Features
 
@@ -25,7 +25,7 @@ An interactive web application that visualizes Computer Science course prerequis
 
 ## For End Users
 
-Simply visit the [live website](https://carleton-cs-course-map.vercel.app/) to use the application. No installation or setup required!
+Simply visit the [live website](https://coursenode.vercel.app/) to use the application. No installation or setup required!
 
 ## For Developers
 
@@ -118,7 +118,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ```
-carleton-cs-prereq-visualizer/
+coursenode/
 ├── app/                    # Next.js app directory
 │   ├── layout.tsx         # Root layout with metadata
 │   ├── page.tsx           # Main application page
